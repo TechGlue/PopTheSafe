@@ -1,0 +1,6 @@
+﻿services:
+  safe:
+    image: safe
+    build:
+      context: .
+      dockerfile: Safe/Dockerfile
