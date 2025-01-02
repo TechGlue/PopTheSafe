@@ -8,11 +8,57 @@ public class MySafe
 {
     private readonly TimeProvider _timeProvider;
 
+    public StateMachine<SafeStates.State, SafeStates.Triggers> machine;
+
+    private readonly StateMachine<SafeStates.State, SafeStates.Triggers>.TriggerWithParameters<string>
+        changedNeededParameters;
+
     public MySafe(TimeProvider timeProvider, string safeName)
     {
         _timeProvider = timeProvider;
         SafeName = safeName;
         CreationTime = _timeProvider.GetUtcNow();
+        
+        // init the machine by default the safe is open unlocked
+        machine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeOpenUnlocked);
+
+        // State machine configurations
+        // 1. 
+        machine.Configure(SafeStates.State.SafeClosedUnlocked)
+            .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked)
+            .OnEntry(OnSafeClosedUnlockedEntry)
+            .OnExit(OnSafeClosedUnlockedExit);
+
+        // Revisit
+        // changedNeededParameters = machine.SetTriggerParameters<string>();
+
+        // 3.
+        machine.Configure(SafeStates.State.SafeOpenUnlocked)
+            .Permit(SafeStates.Triggers.PressResetCode, SafeStates.State.SafeInProgrammingMode)
+            .OnEntry(OnSafeOpenUnlockedEntry)
+            .OnExit(OnSafeOpenUnlockedExit);
+        
+        changedNeededParameters = machine.SetTriggerParameters<string>(SafeStates.Triggers.CloseSafeDoor);
+    }
+
+    private void OnSafeOpenUnlockedExit()
+    {
+        Console.Out.WriteLine("Safe has now left SafeOpenUnlocked state.");
+    }
+
+    private void OnSafeOpenUnlockedEntry()
+    {
+        Console.Out.WriteLine("Safe has now entered SafeOpenUnlocked state.");
+    }
+
+    private void OnSafeClosedUnlockedExit()
+    {
+        Console.Out.WriteLine("Safe has now left SafeClosedUnlocked state.");
+    }
+
+    private void OnSafeClosedUnlockedEntry()
+    {
+        Console.Out.WriteLine("Safe has now entered SafeClosedUnlocked state.");
     }
 
     public string SafeName { get; set; }
@@ -22,8 +68,6 @@ public class MySafe
     public DateTimeOffset LastPasswordUpdateTime { get; private set; } = DateTime.Now;
     public DateTimeOffset LastAdminPasswordUpdateTime { get; private set; } = DateTime.Now;
 
-    // open or closed states - the trigger is a char for now we going to rock Keyboard I/O
-    public StateMachine<string, char> SafeState = new StateMachine<string, char>("open");
 
     public void ChangeSafePassword(string password)
     {
@@ -89,7 +133,7 @@ public class MySafe
      * The admin code doesn't appear to be closer than 750 to the chosen code.  So for example if I pick 1000 as the code, the admin code doesn't appear to be anywhere in the range 250-1000 or 1000-1750.  It wraps around so if I choose 0250 as the code,
      *
      * The case below is not correct it'd be 9499 - 0250
-     * it wouldn't pick 9500-0250 or 250-1000.
+     * -- it wouldn't pick 9500-0250 or 250-1000 -- .
      *
      */
     public (int lowerLimit, int upperLimits) CalcLimits(int x)
