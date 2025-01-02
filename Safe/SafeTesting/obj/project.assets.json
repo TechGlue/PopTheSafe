@@ -564,6 +564,19 @@
           }
         }
       },
+      "Stateless/5.17.0": {
+        "type": "package",
+        "compile": {
+          "lib/net8.0/Stateless.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/Stateless.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "System.AppContext/4.3.0": {
         "type": "package",
         "dependencies": {
@@ -1708,6 +1721,19 @@
         "build": {
           "build/net6.0/xunit.runner.visualstudio.props": {}
         }
+      },
+      "Safe/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "dependencies": {
+          "Stateless": "5.17.0"
+        },
+        "compile": {
+          "bin/placeholder/Safe.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Safe.dll": {}
+        }
       }
     }
   },
@@ -2369,6 +2395,27 @@
         "runtime.ubuntu.16.10-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
         "runtime.ubuntu.16.10-x64.runtime.native.system.security.cryptography.openssl.nuspec",
         "runtimes/ubuntu.16.10-x64/native/System.Security.Cryptography.Native.OpenSsl.so"
+      ]
+    },
+    "Stateless/5.17.0": {
+      "sha512": "SG1EPlbLUorTbf1m/5g75kTHDWIsX0GHxHKyVbH0Ws89KRrm+tAzVqt83q6Rmvkk3ZXgAXOJYCVXdd8cMVFyRQ==",
+      "type": "package",
+      "path": "stateless/5.17.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "Stateless.png",
+        "lib/net462/Stateless.dll",
+        "lib/net462/Stateless.xml",
+        "lib/net8.0/Stateless.dll",
+        "lib/net8.0/Stateless.xml",
+        "lib/net9.0/Stateless.dll",
+        "lib/net9.0/Stateless.xml",
+        "lib/netstandard2.0/Stateless.dll",
+        "lib/netstandard2.0/Stateless.xml",
+        "stateless.5.17.0.nupkg.sha512",
+        "stateless.nuspec"
       ]
     },
     "System.AppContext/4.3.0": {
@@ -5497,11 +5544,17 @@
         "xunit.runner.visualstudio.2.5.3.nupkg.sha512",
         "xunit.runner.visualstudio.nuspec"
       ]
+    },
+    "Safe/1.0.0": {
+      "type": "project",
+      "path": "../Safe/Safe.csproj",
+      "msbuildProject": "../Safe/Safe.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net8.0": [
       "Microsoft.NET.Test.Sdk >= 17.8.0",
+      "Safe >= 1.0.0",
       "coverlet.collector >= 6.0.0",
       "xunit >= 2.5.3",
       "xunit.runner.visualstudio >= 2.5.3"
@@ -5531,7 +5584,11 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "/Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/Safe.csproj": {
+              "projectPath": "/Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/Safe.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

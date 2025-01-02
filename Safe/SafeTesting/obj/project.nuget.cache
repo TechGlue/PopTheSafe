@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "c9KfB50vxwONsmEakHstzcxpIi5cRL2zEoYmGCFWcWY/dEJKNudiMJmWB90XXC1Md7s5x1cpADPl+Tniiiam+g==",
+  "dgSpecHash": "DNGhddQultCw4gRvTYLwSWJKb2kzIoZZJ5VC7FUR3zN3ywm40op63n508dJitvocjvS4nW+UMniRhIb7na0w+g==",
   "success": true,
   "projectFilePath": "/Users/luisg/PersonalProjects/PopTheSafe/Safe/SafeTesting/SafeTesting.csproj",
   "expectedPackageFiles": [
@@ -31,6 +31,7 @@
     "/Users/luisg/.nuget/packages/runtime.ubuntu.14.04-x64.runtime.native.system.security.cryptography.openssl/4.3.0/runtime.ubuntu.14.04-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
     "/Users/luisg/.nuget/packages/runtime.ubuntu.16.04-x64.runtime.native.system.security.cryptography.openssl/4.3.0/runtime.ubuntu.16.04-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
     "/Users/luisg/.nuget/packages/runtime.ubuntu.16.10-x64.runtime.native.system.security.cryptography.openssl/4.3.0/runtime.ubuntu.16.10-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
+    "/Users/luisg/.nuget/packages/stateless/5.17.0/stateless.5.17.0.nupkg.sha512",
     "/Users/luisg/.nuget/packages/system.appcontext/4.3.0/system.appcontext.4.3.0.nupkg.sha512",
     "/Users/luisg/.nuget/packages/system.buffers/4.3.0/system.buffers.4.3.0.nupkg.sha512",
     "/Users/luisg/.nuget/packages/system.collections/4.3.0/system.collections.4.3.0.nupkg.sha512",

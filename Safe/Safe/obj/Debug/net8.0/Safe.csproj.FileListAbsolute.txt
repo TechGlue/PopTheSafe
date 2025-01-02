@@ -3,11 +3,14 @@
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/bin/Debug/net8.0/Safe.runtimeconfig.json
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/bin/Debug/net8.0/Safe.dll
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/bin/Debug/net8.0/Safe.pdb
+/Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/bin/Debug/net8.0/Stateless.dll
+/Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/Safe.csproj.AssemblyReference.cache
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/Safe.GeneratedMSBuildEditorConfig.editorconfig
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/Safe.AssemblyInfoInputs.cache
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/Safe.AssemblyInfo.cs
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/Safe.csproj.CoreCompileInputs.cache
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/Safe.sourcelink.json
+/Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/Safe.csproj.Up2Date
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/Safe.dll
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/refint/Safe.dll
 /Users/luisg/PersonalProjects/PopTheSafe/Safe/Safe/obj/Debug/net8.0/Safe.pdb
