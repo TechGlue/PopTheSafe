@@ -6,26 +6,23 @@ namespace Safe.Models;
 
 public class MySafe
 {
-    public MySafe(string safeName)
+    private readonly TimeProvider _timeProvider;
+
+    public MySafe(TimeProvider timeProvider, string safeName)
     {
+        _timeProvider = timeProvider;
         SafeName = safeName;
+        CreationTime = _timeProvider.GetUtcNow();
     }
 
     public string SafeName { get; set; }
-
-    // note the password can only be 4 digits don't want that being too long
-    // don't need it in the constructor
     public string Password { get; private set; } = "0000";
-
     public string AdminPassword { get; private set; } = "0000";
+    public DateTimeOffset CreationTime { get; private set; }
+    public DateTimeOffset LastPasswordUpdateTime { get; private set; } = DateTime.Now;
+    public DateTimeOffset LastAdminPasswordUpdateTime { get; private set; } = DateTime.Now;
 
-    public DateTime CreationTime { get; private set; } = DateTime.Now;
-
-    public DateTime LastPasswordUpdateTime { get; private set; } = DateTime.Now;
-
-    public DateTime LastAdminPasswordUpdateTime { get; private set; } = DateTime.Now;
-
-    // open or closed states - the trigger is a char
+    // open or closed states - the trigger is a char for now we going to rock Keyboard I/O
     public StateMachine<string, char> SafeState = new StateMachine<string, char>("open");
 
     public void ChangeSafePassword(string password)
@@ -43,8 +40,8 @@ public class MySafe
         Password = password;
 
         // update the times for logging purposes
-        LastPasswordUpdateTime = DateTime.Now;
-        LastAdminPasswordUpdateTime = DateTime.Now;
+        LastPasswordUpdateTime = _timeProvider.GetUtcNow();
+        LastAdminPasswordUpdateTime = _timeProvider.GetUtcNow();
     }
 
     // Think about: Making the limits flexible to allow better testing. For a Proof of concept this is fine.   
@@ -88,7 +85,7 @@ public class MySafe
     }
 
 
-    /* Criteria 
+    /* Criteria
      * The admin code doesn't appear to be closer than 750 to the chosen code.  So for example if I pick 1000 as the code, the admin code doesn't appear to be anywhere in the range 250-1000 or 1000-1750.  It wraps around so if I choose 0250 as the code,
      *
      * The case below is not correct it'd be 9499 - 0250
