@@ -3,28 +3,24 @@ using Stateless.Graph;
 
 namespace Safe.Models;
 
-public class Safe
+public class MySafe(string safeName)
 {
-    public required string SafeName { get; set; }
-    
+    public string SafeName { get; set; } = safeName;
+
     // note the password can only be 4 digits don't want that being too long
     // don't need it in the constructor
     public int Password { get; set; }
     
     public int AdminPassword { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
     // open or closed states - the trigger is a char
     public StateMachine<string, char> SafeState = new StateMachine<string, char>("open");
     
     // initializing a new safe
-    public Safe(string safeName, string password)
-    {
-        SafeName = safeName;
-        CreatedAt = DateTime.Now;
-        UpdatedAt = DateTime.Now;
-    }
-    
+
     public void ChangePassword(int password)
     {
         // unit test the following
@@ -35,6 +31,15 @@ public class Safe
         
         // update pass word. 
         
+        // finally update the 
+        
         
     }
+
+    public bool VerifyFourDigitCode()
+    {
+        return true;
+    } 
+    
+    
 }
