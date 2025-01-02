@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
 using Safe.Models;
-using Xunit.Abstractions;
 
 namespace SafeTesting;
 
