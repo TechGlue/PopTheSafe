@@ -20,7 +20,7 @@ public class MySafe
         CreationTime = _timeProvider.GetUtcNow();
         
         // init the machine by default the safe is open unlocked
-        machine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeOpenUnlocked);
+        machine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
 
         // State machine configurations
         // 1. 
@@ -59,6 +59,21 @@ public class MySafe
     private void OnSafeClosedUnlockedEntry()
     {
         Console.Out.WriteLine("Safe has now entered SafeClosedUnlocked state.");
+    }
+    
+    public void OpenSafeDoor()
+    {
+        machine.Fire(SafeStates.Triggers.OpenSafeDoor);
+    }
+    
+    public void PressResetCode()
+    {
+        machine.Fire(SafeStates.Triggers.PressResetCode);
+    }
+    
+    public void CloseSafeDoor()
+    {
+        machine.Fire(SafeStates.Triggers.CloseSafeDoor);
     }
 
     public string SafeName { get; set; }
