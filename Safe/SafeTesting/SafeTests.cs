@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Safe;
 
@@ -6,6 +7,7 @@ namespace SafeTesting;
 public class SafeTests
 {
     private readonly FakeTimeProvider _fakeTimeProvider = new();
+    private readonly ILogger<MySafe> _logger = new Logger<MySafe>(new LoggerFactory());
 
     [Theory]
     [InlineData("0001")]
@@ -14,7 +16,7 @@ public class SafeTests
     public void ChangeSafePassword_GivenValidDigits_ChangesSafePassword(string digits)
     {
         // Arrange 
-        MySafe hotelSafe = new MySafe(_fakeTimeProvider, "MySafe");
+        MySafe hotelSafe = new MySafe(_fakeTimeProvider, _logger, "MySafe");
 
         // Act 
         hotelSafe.ChangeSafePassword(digits);
@@ -27,7 +29,7 @@ public class SafeTests
     public void ChangeSafePassword_GivenValidDigits_ChangesAdminCode()
     {
         // Arrange 
-        MySafe hotelSafe = new MySafe(_fakeTimeProvider, "MySafe");
+        MySafe hotelSafe = new MySafe(_fakeTimeProvider, _logger, "MySafe");
 
         // Act 
         hotelSafe.ChangeSafePassword("0100");
@@ -40,7 +42,7 @@ public class SafeTests
     public void ChangeSafePassword_GivenValidDigits_ThrowsException()
     {
         // Arrange 
-        MySafe hotelSafe = new MySafe(_fakeTimeProvider, "MySafe");
+        MySafe hotelSafe = new MySafe(_fakeTimeProvider, _logger, "MySafe");
 
         // Act 
         string myPassword = "myPassword";
@@ -58,7 +60,7 @@ public class SafeTests
         // Create an Intitial time
         mockProvider.SetUtcNow(new DateTime(2021, 1, 1, 1, 1, 1));
 
-        MySafe hotelSafe = new MySafe(mockProvider, "MySafe");
+        MySafe hotelSafe = new MySafe(mockProvider, _logger, "MySafe");
 
         DateTimeOffset currentTime = mockProvider.GetUtcNow();
 

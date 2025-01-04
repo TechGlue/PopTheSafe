@@ -1,4 +1,4 @@
-using System.Text;
+using Microsoft.Extensions.Logging;
 using Safe.Models;
 using Stateless;
 using static Safe.MySafeHelper;
@@ -9,10 +9,12 @@ public class MySafe
 {
     // SafeStateMachine fields
     public readonly StateMachine<SafeStates.State, SafeStates.Triggers> SafeStateMachine;
+
     private readonly StateMachine<SafeStates.State, SafeStates.Triggers>.TriggerWithParameters<string>
         _changedNeededParameters;
-    
+
     // Safe properties + fields
+    private readonly ILogger<MySafe> _logger;
     private readonly TimeProvider _timeProvider;
     public string SafeName { get; private set; }
     public string Password { get; private set; } = "0000";
@@ -21,14 +23,17 @@ public class MySafe
     public DateTimeOffset LastPasswordUpdateTime { get; private set; } = DateTime.Now;
     public DateTimeOffset LastAdminPasswordUpdateTime { get; private set; } = DateTime.Now;
 
-
-    public MySafe(TimeProvider timeProvider, string safeName)
+    public MySafe(TimeProvider timeProvider, ILogger<MySafe> logger, string safeName)
     {
+        _logger = logger;
         _timeProvider = timeProvider;
         SafeName = safeName;
         CreationTime = _timeProvider.GetUtcNow();
+
         // Default state for the safe is SafeClosedUnlocked
+        _logger.LogInformation("Creating a new safe with name: {SafeName}", SafeName);
         SafeStateMachine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
+        FetchSafeState();
 
         // SafeStateMachine configuration flow 
         SafeStateMachine.Configure(SafeStates.State.SafeClosedUnlocked)
@@ -61,52 +66,67 @@ public class MySafe
             .OnExit(OnSafeLockedExitValidPassword);
     }
 
+    // Entering and exiting states behaviors
     private void OnSafeLockedExitValidPassword()
     {
-        Console.WriteLine("Password is correct. Safe has now left SafeLocked state.");
+        FetchSafeState();
+        _logger.LogInformation("Valid password entered. Safe has left SafeLocked state.");
     }
 
     private void OnSafeClosedLockedExit()
     {
-        Console.WriteLine("Safe locked.");
+        FetchSafeState();
+        _logger.LogInformation("Safe locked.");
     }
 
     private void OnSafeClosedLockedEntry()
     {
-        Console.WriteLine("Safe is now locked and armed.");
+        FetchSafeState();
+        _logger.LogInformation("Safe is locked and armed.");
     }
 
     private void OnSafeOpenProgrammingModeEntry()
     {
-        Console.WriteLine("Safe has now entered SafeProgrammingMode state.");
+        FetchSafeState();
+        _logger.LogInformation("Safe has entered SafeProgrammingMode state.");
     }
 
     private void OnSafeOpenProgrammingModeExit()
     {
-        Console.WriteLine("Safe has now exited SafeProgrammingMode state.");
+        FetchSafeState();
+        _logger.LogInformation("Safe has exited SafeProgrammingMode state.");
     }
 
     private void OnSafeOpenUnlockedExit()
     {
-        Console.WriteLine("Safe has now left SafeOpenUnlocked state.");
+        FetchSafeState();
+        _logger.LogInformation("Safe has now left SafeOpenUnlocked state.");
     }
 
     private void OnSafeOpenUnlockedEntry()
     {
-        Console.WriteLine("Safe has now entered SafeOpenUnlocked state.");
+        FetchSafeState();
+        _logger.LogInformation("Safe has now entered SafeOpenUnlocked state.");
     }
 
     private void OnSafeClosedUnlockedExit()
     {
-        Console.WriteLine("Safe has now left SafeClosedUnlocked state.");
+        FetchSafeState();
+        _logger.LogInformation("Safe has now left SafeClosedUnlocked state.");
     }
 
     private void OnSafeClosedUnlockedEntry()
     {
-        Console.WriteLine("Safe has now entered SafeClosedUnlocked state.");
+        FetchSafeState();
+        _logger.LogInformation("Safe has now left SafeClosedUnlocked state.");
     }
 
     // MySafeAPI
+    public void FetchSafeState()
+    {
+        _logger.LogInformation("Safe {SafeName} is currently in {State} state", SafeName, SafeStateMachine.State);
+    }
+
     public void OpenSafeDoor()
     {
         SafeStateMachine.Fire(SafeStates.Triggers.OpenSafeDoor);
@@ -126,6 +146,7 @@ public class MySafe
     {
         if (VerifyFourDigitCode(newPin) is false)
         {
+            _logger.LogError("Invalid password format. Please enter a 4 digit password.");
             throw new ArgumentException("Invalid password format. Please enter a 4 digit password.");
         }
 
@@ -137,6 +158,7 @@ public class MySafe
     {
         if (VerifyFourDigitCode(safeCode) is false)
         {
+            _logger.LogError("Invalid password format. Please enter a 4 digit password.");
             throw new ArgumentException("Invalid password format. Please enter a 4 digit password.");
         }
 
@@ -146,7 +168,7 @@ public class MySafe
         }
         catch (Exception ex)
         {
-            Console.WriteLine("Invalid Password" + ex.Message);
+            _logger.LogError("Invalid password. Please enter the correct password. \n {exception}", ex);
         }
     }
 
@@ -155,6 +177,7 @@ public class MySafe
         // Ensure the password is of 4 digits. throw exceptions
         if (VerifyFourDigitCode(password) is not true)
         {
+            _logger.LogError("Invalid password format. Please enter a 4 digit password.");
             throw new ArgumentException("Invalid password format. Please enter a 4 digit password");
         }
 
