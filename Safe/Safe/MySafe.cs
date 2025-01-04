@@ -1,79 +1,155 @@
 using System.Text;
+using Safe.Models;
 using Stateless;
-using Stateless.Graph;
 
-namespace Safe.Models;
+namespace Safe;
 
 public class MySafe
 {
     private readonly TimeProvider _timeProvider;
 
-    public StateMachine<SafeStates.State, SafeStates.Triggers> machine;
+    public readonly StateMachine<SafeStates.State, SafeStates.Triggers> SafeStateMachine;
 
     private readonly StateMachine<SafeStates.State, SafeStates.Triggers>.TriggerWithParameters<string>
-        changedNeededParameters;
+        _changedNeededParameters;
 
     public MySafe(TimeProvider timeProvider, string safeName)
     {
         _timeProvider = timeProvider;
         SafeName = safeName;
         CreationTime = _timeProvider.GetUtcNow();
-        
-        // init the machine by default the safe is open unlocked
-        machine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
+
+        // initialize the machine to by default the safe is open unlocked
+        SafeStateMachine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
 
         // State machine configurations
         // 1. 
-        machine.Configure(SafeStates.State.SafeClosedUnlocked)
+        SafeStateMachine.Configure(SafeStates.State.SafeClosedUnlocked)
             .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked)
             .OnEntry(OnSafeClosedUnlockedEntry)
             .OnExit(OnSafeClosedUnlockedExit);
 
-        // Revisit
-        // changedNeededParameters = machine.SetTriggerParameters<string>();
-
-        // 3.
-        machine.Configure(SafeStates.State.SafeOpenUnlocked)
-            .Permit(SafeStates.Triggers.PressResetCode, SafeStates.State.SafeInProgrammingMode)
+        // 2.
+        SafeStateMachine.Configure(SafeStates.State.SafeOpenUnlocked)
+            .Permit(SafeStates.Triggers.PressResetCode, SafeStates.State.SafeInProgrammingModeOpen)
             .OnEntry(OnSafeOpenUnlockedEntry)
             .OnExit(OnSafeOpenUnlockedExit);
-        
-        changedNeededParameters = machine.SetTriggerParameters<string>(SafeStates.Triggers.CloseSafeDoor);
+
+
+        // 3. 
+        SafeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeOpen)
+            .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeInProgrammingModeClosed)
+            .OnEntry(OnSafeOpenProgrammingModeEntry)
+            .OnExit(OnSafeOpenProgrammingModeExit);
+
+        // 4.
+        SafeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeClosed)
+            .Permit(SafeStates.Triggers.EnterNewPin, SafeStates.State.SafeLocked)
+            .OnEntry(OnSafeClosedLockedEntry)
+            .OnExit(OnSafeClosedLockedExit);
+
+        _changedNeededParameters = SafeStateMachine.SetTriggerParameters<string>(SafeStates.Triggers.CorrectSafeCodeEntered);
+
+        SafeStateMachine.Configure(SafeStates.State.SafeLocked)
+            .PermitIf(_changedNeededParameters, SafeStates.State.SafeClosedUnlocked,
+                (string password) => password == Password)
+            .OnEntry(OnSafeClosedLockedEntry)
+            .OnExit(OnSafeLockedExitValidPassword);
+    }
+
+    // Entering and exiting logic for the states
+    private void OnSafeClosedExitValidEntry()
+    {
+        Console.WriteLine("Safe locked");
+    }
+
+    private void OnSafeLockedExitValidPassword()
+    {
+        Console.WriteLine("Password is correct. Safe has now left SafeLocked state.");
+    }
+
+    private void OnSafeClosedLockedExit()
+    {
+        Console.WriteLine("Safe locked.");
+    }
+
+    private void OnSafeClosedLockedEntry()
+    {
+        Console.WriteLine("Safe is now locked and armed.");
+    }
+
+    private void OnSafeOpenProgrammingModeEntry()
+    {
+        Console.WriteLine("Safe has now entered SafeProgrammingMode state.");
+    }
+
+    private void OnSafeOpenProgrammingModeExit()
+    {
+        Console.WriteLine("Safe has now exited SafeProgrammingMode state.");
     }
 
     private void OnSafeOpenUnlockedExit()
     {
-        Console.Out.WriteLine("Safe has now left SafeOpenUnlocked state.");
+        Console.WriteLine("Safe has now left SafeOpenUnlocked state.");
     }
 
     private void OnSafeOpenUnlockedEntry()
     {
-        Console.Out.WriteLine("Safe has now entered SafeOpenUnlocked state.");
+        Console.WriteLine("Safe has now entered SafeOpenUnlocked state.");
     }
 
     private void OnSafeClosedUnlockedExit()
     {
-        Console.Out.WriteLine("Safe has now left SafeClosedUnlocked state.");
+        Console.WriteLine("Safe has now left SafeClosedUnlocked state.");
     }
 
     private void OnSafeClosedUnlockedEntry()
     {
-        Console.Out.WriteLine("Safe has now entered SafeClosedUnlocked state.");
+        Console.WriteLine("Safe has now entered SafeClosedUnlocked state.");
     }
-    
+
+    // API for the safe
     public void OpenSafeDoor()
     {
-        machine.Fire(SafeStates.Triggers.OpenSafeDoor);
+        SafeStateMachine.Fire(SafeStates.Triggers.OpenSafeDoor);
     }
-    
+
     public void PressResetCode()
     {
-        machine.Fire(SafeStates.Triggers.PressResetCode);
+        SafeStateMachine.Fire(SafeStates.Triggers.PressResetCode);
     }
-    
+
     public void CloseSafeDoor()
     {
-        machine.Fire(SafeStates.Triggers.CloseSafeDoor);
+        SafeStateMachine.Fire(SafeStates.Triggers.CloseSafeDoor);
+    }
+
+    public void EnterNewPin(string newPin)
+    {
+        if (VerifyFourDigitCode(newPin) is false)
+        {
+            throw new ArgumentException("Invalid password format. Please enter a 4 digit password.");
+        }
+
+        ChangeSafePassword(newPin);
+        SafeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
+    }
+
+    public void EnterSafeCode(string safeCode)
+    {
+        if (VerifyFourDigitCode(safeCode) is false)
+        {
+            throw new ArgumentException("Invalid password format. Please enter a 4 digit password.");
+        }
+
+        try
+        {
+            SafeStateMachine.Fire(_changedNeededParameters, safeCode);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Invalid Password" + ex.Message);
+        }
     }
 
     public string SafeName { get; set; }
@@ -83,13 +159,12 @@ public class MySafe
     public DateTimeOffset LastPasswordUpdateTime { get; private set; } = DateTime.Now;
     public DateTimeOffset LastAdminPasswordUpdateTime { get; private set; } = DateTime.Now;
 
-
     public void ChangeSafePassword(string password)
     {
         // Ensure the password is of 4 digits. throw exceptions
         if (VerifyFourDigitCode(password) is not true)
         {
-            throw new ArgumentException("password is not valid ");
+            throw new ArgumentException("Invalid password format. Please enter a 4 digit password");
         }
 
         // update the admin password for the safe
@@ -103,7 +178,6 @@ public class MySafe
         LastAdminPasswordUpdateTime = _timeProvider.GetUtcNow();
     }
 
-    // Think about: Making the limits flexible to allow better testing. For a Proof of concept this is fine.   
     public string CalculateAdminCode(string password)
     {
         int userPassword = -1;
@@ -143,14 +217,6 @@ public class MySafe
         return adminPasswordBuilder.ToString();
     }
 
-
-    /* Criteria
-     * The admin code doesn't appear to be closer than 750 to the chosen code.  So for example if I pick 1000 as the code, the admin code doesn't appear to be anywhere in the range 250-1000 or 1000-1750.  It wraps around so if I choose 0250 as the code,
-     *
-     * The case below is not correct it'd be 9499 - 0250
-     * -- it wouldn't pick 9500-0250 or 250-1000 -- .
-     *
-     */
     public (int lowerLimit, int upperLimits) CalcLimits(int x)
     {
         // In a perfect world the lower and upper limit will be described. Keep in mind sometimes it will be greater. 

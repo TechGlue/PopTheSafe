@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Time.Testing;
+using Safe;
 using Safe.Models;
 
 namespace SafeTesting;

@@ -5,7 +5,8 @@ public class SafeStates{
     {
         SafeClosedUnlocked,
         SafeOpenUnlocked,
-        SafeInProgrammingMode,
+        SafeInProgrammingModeOpen,
+        SafeInProgrammingModeClosed,
         SafeLocked
     }
 
@@ -15,8 +16,6 @@ public class SafeStates{
         CloseSafeDoor, 
         PressResetCode, 
         EnterNewPin, 
-        GenerateAdminCode, 
-        IncorrectSafeCodeEntered, 
         CorrectSafeCodeEntered, 
     } 
 };
