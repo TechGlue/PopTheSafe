@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Safe", "Safe\Safe.csproj", "{B19ABDA0-1ED0-488B-B89E-31FFB6F63668}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySafe", "MySafe\MySafe.csproj", "{B19ABDA0-1ED0-488B-B89E-31FFB6F63668}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{64728640-C32B-4242-A529-1D46AC4B7775}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeTesting", "SafeTesting\SafeTesting.csproj", "{71A856E6-0149-4C45-96C4-A824A3C4CF78}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MySafeTesting", "MySafeTesting\MySafeTesting.csproj", "{71A856E6-0149-4C45-96C4-A824A3C4CF78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
