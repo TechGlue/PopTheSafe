@@ -12,6 +12,7 @@ bool interactiveSafe = true;
 while (interactiveSafe)
 {
     Console.WriteLine("MySafe is in state: " + newSafe.SafeStateMachine.State);
+    Console.WriteLine("Admin Code: " + newSafe.AdminPassword);
 
     if (newSafe.SafeIsLocked is false && newSafe.SafeInProgrammingMode is false)
     {
@@ -47,7 +48,7 @@ while (interactiveSafe)
     else if (newSafe.SafeInProgrammingMode)
     {
         Console.WriteLine(
-            "1. Open MySafe Door\n2. Close MySafe Door \n3. Enter new 4-digit safe pin\n0. Exit");
+            "1. Open MySafe Door\n2. Close MySafe Door \n3. Enter new 4-digit safe pin\n0. Exit\n");
         string? input = Console.ReadLine();
 
         if (input is not null)
@@ -84,6 +85,7 @@ while (interactiveSafe)
     {
         Console.WriteLine(
             "1. Open MySafe Door\n2. Close MySafe Door\n3. Unlock MySafe\n0. Exit");
+
         string? input = Console.ReadLine();
 
         if (input is not null)

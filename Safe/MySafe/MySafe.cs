@@ -74,7 +74,7 @@ public class MySafe
 
         SafeStateMachine.Configure(SafeStates.State.SafeLocked)
             .PermitIf(_changedNeededParameters, SafeStates.State.SafeClosedUnlocked,
-                (string password) => password == Password)
+                (string password) => password == Password || password == AdminPassword)
             .Ignore(SafeStates.Triggers.OpenSafeDoor)
             .Ignore(SafeStates.Triggers.CloseSafeDoor)
             .OnEntry(OnSafeClosedLockedEntry)
