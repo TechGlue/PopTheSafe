@@ -68,9 +68,8 @@ while (interactiveSafe)
                     string? pin = Console.ReadLine();
                     if (pin is not null)
                     {
-                        newSafe.EnterNewPin(pin);
+                        newSafe.ChangeSafePassword(pin);
                     }
-
                     break;
                 case "0":
                     interactiveSafe = false;
@@ -107,7 +106,6 @@ while (interactiveSafe)
                     {
                         newSafe.EnterSafeCode(pin);
                     }
-
                     break;
                 case "0":
                     interactiveSafe = false;

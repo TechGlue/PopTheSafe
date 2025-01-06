@@ -1,4 +1,4 @@
-namespace Safe.Models;
+namespace Safe;
 
 public class SafeStates{
     public enum State 

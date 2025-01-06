@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Safe.Models;
 using Stateless;
 using static Safe.MySafeHelper;
 
@@ -22,8 +21,8 @@ public class MySafe
     public string AdminPassword { get; private set; } = "0000";
 
     // modes for the client to interact with the safe
-    public bool SafeInProgrammingMode { get; private set; } = false;
-    public bool SafeIsLocked { get; private set; } = false;
+    public bool SafeInProgrammingMode { get; private set; }
+    public bool SafeIsLocked { get; private set; }
     public DateTimeOffset CreationTime { get; private set; }
     public DateTimeOffset LastPasswordUpdateTime { get; private set; } = DateTime.Now;
     public DateTimeOffset LastAdminPasswordUpdateTime { get; private set; } = DateTime.Now;
@@ -187,19 +186,6 @@ public class MySafe
         SafeStateMachine.Fire(SafeStates.Triggers.CloseSafeDoor);
     }
 
-    public void EnterNewPin(string newPin)
-    {
-        if (VerifyFourDigitCode(newPin) is false)
-        {
-            // _logger.LogError("Invalid password format. Please enter a 4 digit password.");
-            // throw new ArgumentException("Invalid password format. Please enter a 4 digit password.");
-            return;
-        }
-
-        ChangeSafePassword(newPin);
-        SafeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
-    }
-
     public void EnterSafeCode(string safeCode)
     {
         if (VerifyFourDigitCode(safeCode) is false)
@@ -227,6 +213,13 @@ public class MySafe
         {
             // _logger.LogError("Invalid password format. Please enter a 4 digit password.");
             // throw new ArgumentException("Invalid password format. Please enter a 4 digit password");
+            Console.WriteLine("Invalid password format.");
+            return;
+        }
+
+        if (SafeStateMachine.IsInState(SafeStates.State.SafeInProgrammingModeOpen))
+        {
+            Console.WriteLine("Safe door is open. Close door to set password.");
             return;
         }
 
@@ -235,6 +228,8 @@ public class MySafe
 
         // update safe pass word with the user password 
         Password = password;
+
+        SafeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
 
         // update the times for logging purposes
         LastPasswordUpdateTime = _timeProvider.GetUtcNow();
