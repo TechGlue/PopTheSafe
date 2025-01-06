@@ -1,8 +1,4 @@
-﻿// Note:
-// Throws exception when generating new pin for safe. Only numbers will be entered in the ui 
-// for the pin. Not going to invest too much time in handling.
-
-// todo:
+﻿// todo:
 // -  Figure out the issue with the algorithm for generating the admin code 
 
 using Safe;
@@ -15,12 +11,12 @@ MySafe newSafe = new MySafe(TimeProvider.System, logger, "MySafe");
 bool interactiveSafe = true;
 while (interactiveSafe)
 {
-    Console.WriteLine("Safe is in state: " + newSafe.SafeStateMachine.State);
+    Console.WriteLine("MySafe is in state: " + newSafe.SafeStateMachine.State);
 
     if (newSafe.SafeIsLocked is false && newSafe.SafeInProgrammingMode is false)
     {
         Console.WriteLine(
-            "1. Open Safe Door\n2. Close Safe Door\n3. Press Reset Code\n0. Exit");
+            "1. Open MySafe Door\n2. Close MySafe Door\n3. Press Reset Code\n0. Exit");
         string? input = Console.ReadLine();
 
         if (input is not null)
@@ -51,7 +47,7 @@ while (interactiveSafe)
     else if (newSafe.SafeInProgrammingMode)
     {
         Console.WriteLine(
-            "1. Open Safe Door\n2. Close Safe Door \n3. Enter new 4-digit safe pin\n0. Exit");
+            "1. Open MySafe Door\n2. Close MySafe Door \n3. Enter new 4-digit safe pin\n0. Exit");
         string? input = Console.ReadLine();
 
         if (input is not null)
@@ -87,7 +83,7 @@ while (interactiveSafe)
     else if (newSafe.SafeIsLocked && newSafe.SafeInProgrammingMode is false)
     {
         Console.WriteLine(
-            "1. Open Safe Door\n2. Close Safe Door\n3. Unlock Safe\n0. Exit");
+            "1. Open MySafe Door\n2. Close MySafe Door\n3. Unlock MySafe\n0. Exit");
         string? input = Console.ReadLine();
 
         if (input is not null)
