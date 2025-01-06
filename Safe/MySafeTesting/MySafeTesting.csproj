@@ -7,6 +7,7 @@
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+        <RootNamespace>SafeTesting</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -22,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Safe\Safe.csproj" />
+      <ProjectReference Include="..\MySafe\MySafe.csproj" />
     </ItemGroup>
 
 </Project>
