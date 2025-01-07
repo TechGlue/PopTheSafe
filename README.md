@@ -1,6 +1,6 @@
 # PopTheSafe
 
-## OverView
+## Overview
 ![MySafeStateMachine](./Docs/MySafe.png)
 
 ## Running 
