@@ -124,6 +124,25 @@ public class MySafe
         // _logger.LogInformation("MySafe entered SafeProgrammingMode state.");
     }
 
+    public void EnterNewPin(string newPin)
+    {
+        if (VerifyFourDigitCode(newPin) is false)
+        {
+            // _logger.LogError("Invalid password format. Please enter a 4 digit password.");
+            // throw new ArgumentException("Invalid password format. Please enter a 4 digit password.");
+            return;
+        }
+
+        if (SafeStateMachine.IsInState(SafeStates.State.SafeInProgrammingModeOpen))
+        {
+            Console.WriteLine("Door is open. Close door to enter programming mode.");
+            return;
+        }
+
+        ChangeSafePassword(newPin);
+        SafeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
+    }
+
     private void OnSafeOpenProgrammingModeExit()
     {
         FetchSafeState();
@@ -229,7 +248,6 @@ public class MySafe
         // update safe pass word with the user password 
         Password = password;
 
-        SafeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
 
         // update the times for logging purposes
         LastPasswordUpdateTime = _timeProvider.GetUtcNow();

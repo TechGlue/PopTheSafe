@@ -9,6 +9,7 @@ ILogger<MySafe> logger = factory.CreateLogger<MySafe>();
 MySafe newSafe = new MySafe(TimeProvider.System, logger, "MySafe");
 
 bool interactiveSafe = true;
+
 while (interactiveSafe)
 {
     Console.WriteLine("MySafe is in state: " + newSafe.SafeStateMachine.State);
@@ -68,7 +69,7 @@ while (interactiveSafe)
                     string? pin = Console.ReadLine();
                     if (pin is not null)
                     {
-                        newSafe.ChangeSafePassword(pin);
+                        newSafe.EnterNewPin(pin);
                     }
                     break;
                 case "0":

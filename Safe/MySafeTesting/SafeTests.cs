@@ -1,6 +1,7 @@
 using System.Diagnostics.Tracing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Safe;
 
 namespace SafeTesting;
@@ -78,4 +79,7 @@ public class SafeTests
         Assert.NotEqual(currentTime, hotelSafe.LastAdminPasswordUpdateTime);
         Assert.Equal(currentTime, hotelSafe.CreationTime);
     }
+    
+    
+    
 }
