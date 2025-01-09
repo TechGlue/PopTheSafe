@@ -93,13 +93,10 @@ public class MySafe : ISafe
         switch (_safeStateMachine.State)
         {
             case SafeStates.State.SafeInProgrammingModeOpen:
-                Console.WriteLine("Safe door is open. Please close door to set a password.");
                 break;
             case SafeStates.State.SafeInProgrammingModeClosed:
                 if (VerifyFourDigitCode(password) is false)
                 {
-                    Console.WriteLine(
-                        "Invalid password format. Look at your fingers as you type important passwords please.");
                     break;
                 }
 
