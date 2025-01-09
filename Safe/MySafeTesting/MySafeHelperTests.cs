@@ -1,9 +1,17 @@
-using static Safe.MySafeHelper;
+using Safe;
+using Xunit.Abstractions;
 
 namespace SafeTesting;
 
 public class MySafeHelperTests
 {
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public MySafeHelperTests(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
+
     [Theory]
     [InlineData("1")]
     [InlineData("03")]
@@ -11,8 +19,11 @@ public class MySafeHelperTests
     [InlineData("102323")]
     public void VerifyFourDigits_GivenInvalidFourDigitCode_ReturnsFalse(string digits)
     {
-        // Arrange - Act 
-        bool output = VerifyFourDigitCode(digits);
+        // Arrange
+        MySafe testSafe = new MySafe("TestSafe");
+
+        // Act 
+        bool output = testSafe.VerifyFourDigitCode(digits);
 
         // Assert
         Assert.False(output);
@@ -25,8 +36,11 @@ public class MySafeHelperTests
     [InlineData("9999")]
     public void VerifyFourDigits_GivenValidFourDigitCode_ReturnsTrue(string digits)
     {
+        // Arrange
+        MySafe testSafe = new MySafe("TestSafe");
+
         // Act 
-        bool output = VerifyFourDigitCode(digits);
+        bool output = testSafe.VerifyFourDigitCode(digits);
 
         // Assert
         Assert.True(output);
@@ -38,9 +52,10 @@ public class MySafeHelperTests
     {
         // Arrange 
         string password = "NotAPassword";
+        AdminCodeGenerator adminCodeGenerator = new AdminCodeGenerator();
 
-        // Assert
-        Assert.Throws<ArgumentException>(() => CalculateAdminCode(password));
+        // Act - Assert
+        Assert.Throws<ArgumentException>(() => adminCodeGenerator.CalculateAdminCode(password));
     }
 
     [Theory]
@@ -51,33 +66,54 @@ public class MySafeHelperTests
     public void CalculateAdminCode_FourDigitPassword_ReturnsFourDigitPassword(string password)
     {
         // Arrange 
+        AdminCodeGenerator adminCodeGenerator = new AdminCodeGenerator();
 
         // Act 
-        string adminCode = CalculateAdminCode(password);
+        string adminCode = adminCodeGenerator.CalculateAdminCode(password);
 
         // Assert
         Assert.Equal(4, adminCode.Length);
     }
 
-    [InlineData("01")]
     [InlineData("9999")]
-    [InlineData("0250")]
-    [InlineData("123")]
-    [Theory(Skip = "Working through testing randomness")]
+    [InlineData("1250")]
+    [Theory()]
     public void CalculateAdminCode_FourDigitPassword_ReturnsFourDigitPasswordInRange(string safePassword)
     {
         // Arrange 
-
-        // Anything from 0 to 751 is banned and will fail the test
+        AdminCodeGenerator adminPassGenerator = new AdminCodeGenerator();
         int passcode = Int32.Parse(safePassword);
-        var limits = CalcLimits(passcode);
+        var adminPassLimits = adminPassGenerator.CalcLimits(passcode);
 
         // Act 
-        string adminCode = CalculateAdminCode(safePassword);
+        _testOutputHelper.WriteLine("Lower" + adminPassLimits.lowerLimit);
+        _testOutputHelper.WriteLine("Upper" + adminPassLimits.upperLimits);
+
+        string generatedAdminCode = adminPassGenerator.CalculateAdminCode(safePassword);
+        int pin = Int32.Parse(generatedAdminCode);
 
         // Assert
-        Assert.True(!(Enumerable.Range(limits.lowerLimit, passcode).Contains(Int32.Parse(adminCode)) &&
-                      !Enumerable.Range(passcode, limits.upperLimits).Contains(Int32.Parse(adminCode))));
-        Assert.Equal(4, adminCode.Length);
+        bool isInRange = adminPassLimits.lowerLimit <= adminPassLimits.upperLimits
+            ? pin >= adminPassLimits.lowerLimit && pin <= adminPassLimits.upperLimits // Standard range
+            : pin >= adminPassLimits.upperLimits && pin <= adminPassLimits.lowerLimit; // Wrapping range
+        Assert.True(isInRange);
+        Assert.Equal(4, generatedAdminCode.Length);
+    }
+
+
+    [Fact]
+    public void CalcLimits_GivenNumber_ReturnsTupleWithinLimit()
+    {
+        // Arrange 
+        AdminCodeGenerator adminCodeGenerator = new AdminCodeGenerator();
+        int x = 1001;
+
+        // Act 
+        var limits = adminCodeGenerator.CalcLimits(x);
+
+        // Assert
+        Assert.IsType<(int, int)>(limits);
+        Assert.Equal(1751, limits.upperLimits);
+        Assert.Equal(251, limits.lowerLimit);
     }
 }

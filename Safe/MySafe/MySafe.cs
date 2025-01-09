@@ -1,65 +1,55 @@
 using Microsoft.Extensions.Logging;
 using Stateless;
-using static Safe.MySafeHelper;
 
 namespace Safe;
 
 public class MySafe : ISafe
 {
     // SafeStateMachine fields
-    public readonly StateMachine<SafeStates.State, SafeStates.Triggers> SafeStateMachine;
+    private readonly StateMachine<SafeStates.State, SafeStates.Triggers> _safeStateMachine;
 
     private readonly StateMachine<SafeStates.State, SafeStates.Triggers>.TriggerWithParameters<string>
-        _PinTrigger;
+        _pinTrigger;
 
+    private readonly IAdminCodeGenerator _adminCodeGenerator;
+
+    // Safe fields and properties
     private readonly ILogger<MySafe> _logger;
-
-    private readonly TimeProvider _timeProvider;
     public string SafeName { get; private set; }
     public string Password { get; private set; } = "0000";
     public string EnteredPassword { get; private set; } = String.Empty;
-
     public string AdminPassword { get; private set; } = "0000";
 
-    public DateTimeOffset CreationTime { get; private set; }
-    public DateTimeOffset LastPasswordUpdateTime { get; private set; } = DateTime.Now;
-    public DateTimeOffset LastAdminPasswordUpdateTime { get; private set; } = DateTime.Now;
-
-    public MySafe(TimeProvider timeProvider, ILogger<MySafe> logger, string safeName)
+    public MySafe( string safeName)
     {
-        _logger = logger;
-        _timeProvider = timeProvider;
         SafeName = safeName;
-        CreationTime = _timeProvider.GetUtcNow();
 
-        SafeStateMachine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
+        // SafeStateMachine initialization
+        _safeStateMachine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
+        _adminCodeGenerator = new AdminCodeGenerator();
 
         // SafeStateMachine configuration flow 
-        SafeStateMachine.Configure(SafeStates.State.SafeClosedUnlocked)
-            .PermitReentry(SafeStates.Triggers.CloseSafeDoor)
-            .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked)
-            .Ignore(SafeStates.Triggers.PressResetCode); // ignore if the reset code is pressed
+        _safeStateMachine.Configure(SafeStates.State.SafeClosedUnlocked)
+            .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked);
 
-        SafeStateMachine.Configure(SafeStates.State.SafeOpenUnlocked)
+        _safeStateMachine.Configure(SafeStates.State.SafeOpenUnlocked)
             .PermitReentry(SafeStates.Triggers.OpenSafeDoor)
             .Permit(SafeStates.Triggers.PressResetCode, SafeStates.State.SafeInProgrammingModeOpen)
             .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeClosedUnlocked);
 
-        SafeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeOpen)
-            .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeInProgrammingModeClosed)
-            .PermitReentry(SafeStates.Triggers.OpenSafeDoor)
-            .Ignore(SafeStates.Triggers.EnterNewPin);
+        _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeOpen)
+            .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeInProgrammingModeClosed);
 
-        SafeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeClosed)
+        _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeClosed)
+            .PermitReentry(SafeStates.Triggers.SafeCodeEntered)
             .Permit(SafeStates.Triggers.PressLock, SafeStates.State.SafeLocked)
-            .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeInProgrammingModeOpen)
-            .PermitReentry(SafeStates.Triggers.CloseSafeDoor);
+            .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeInProgrammingModeOpen);
 
-        _PinTrigger =
-            SafeStateMachine.SetTriggerParameters<string>(SafeStates.Triggers.SafeCodeEntered);
+        _pinTrigger =
+            _safeStateMachine.SetTriggerParameters<string>(SafeStates.Triggers.SafeCodeEntered);
 
-        SafeStateMachine.Configure(SafeStates.State.SafeLocked)
-            .PermitIf(_PinTrigger, SafeStates.State.SafeLockedPinEntered, (string password) =>
+        _safeStateMachine.Configure(SafeStates.State.SafeLocked)
+            .PermitIf(_pinTrigger, SafeStates.State.SafeLockedPinEntered, (string password) =>
             {
                 EnteredPassword = password;
                 return EnteredPassword != String.Empty;
@@ -67,14 +57,14 @@ public class MySafe : ISafe
             .Ignore(SafeStates.Triggers.OpenSafeDoor)
             .Ignore(SafeStates.Triggers.CloseSafeDoor);
 
-        SafeStateMachine.Configure(SafeStates.State.SafeLockedPinEntered)
+        _safeStateMachine.Configure(SafeStates.State.SafeLockedPinEntered)
             // permit only if the door open trigger is selected and the password is correct
             .PermitIf(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked,
                 () => EnteredPassword == Password)
             .PermitIf(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeLocked,
                 () =>
                 {
-                    Console.WriteLine("Invalid password. Dig deep to remember.");
+                    Console.WriteLine("Invalid password. Dig deep and remember.");
                     return EnteredPassword != Password;
                 })
             .Ignore(SafeStates.Triggers.EnterNewPin)
@@ -84,27 +74,27 @@ public class MySafe : ISafe
 
     public void Open()
     {
-        SafeStateMachine.Fire(SafeStates.Triggers.OpenSafeDoor);
+        _safeStateMachine.Fire(SafeStates.Triggers.OpenSafeDoor);
     }
 
     public void Close()
     {
-        SafeStateMachine.Fire(SafeStates.Triggers.CloseSafeDoor);
+        _safeStateMachine.Fire(SafeStates.Triggers.CloseSafeDoor);
     }
 
     public void PressReset()
     {
-        SafeStateMachine.Fire(SafeStates.Triggers.PressResetCode);
+        _safeStateMachine.Fire(SafeStates.Triggers.PressResetCode);
     }
 
     public void PressLock()
     {
-        SafeStateMachine.Fire(SafeStates.Triggers.PressLock);
+        _safeStateMachine.Fire(SafeStates.Triggers.PressLock);
     }
 
     public void EnterCode(string password)
     {
-        switch (SafeStateMachine.State)
+        switch (_safeStateMachine.State)
         {
             case SafeStates.State.SafeInProgrammingModeOpen:
                 Console.WriteLine("Safe door is open. Please close door to set a password.");
@@ -117,24 +107,21 @@ public class MySafe : ISafe
                     break;
                 }
 
-                AdminPassword = CalculateAdminCode(password);
+                AdminPassword = _adminCodeGenerator.CalculateAdminCode(password);
                 Password = password;
 
-                SafeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
+                _safeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
 
-                LastPasswordUpdateTime = _timeProvider.GetUtcNow();
-                LastAdminPasswordUpdateTime = _timeProvider.GetUtcNow();
                 break;
 
             case SafeStates.State.SafeLocked:
-                // password entered but who's the imposter?
-                SafeStateMachine.Fire(_PinTrigger, password);
+                _safeStateMachine.Fire(_pinTrigger, password);
                 break;
         }
     }
 
     public string Describe() =>
-        SafeStateMachine.State switch
+        _safeStateMachine.State switch
         {
             SafeStates.State.SafeClosedUnlocked =>
                 "The safe is closed but a deep, deep fear in you leads you to believe it is not locked",
@@ -150,4 +137,18 @@ public class MySafe : ISafe
                 "The safe is locked with a pin entered. Is it the correct pin? idk try opening the safe",
             _ => "Not sure how you got here. But we're here."
         };
+    
+    public bool VerifyFourDigitCode(string password)
+    {
+        string pass = password.Trim();
+
+        int length = pass.Length;
+
+        if (length != 4)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

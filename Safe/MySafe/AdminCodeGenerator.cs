@@ -2,9 +2,9 @@ using System.Text;
 
 namespace Safe;
 
-public static class MySafeHelper
+public class AdminCodeGenerator : IAdminCodeGenerator
 {
-    public static string CalculateAdminCode(string password)
+    public string CalculateAdminCode(string password)
     {
         int userPassword = -1;
 
@@ -17,14 +17,20 @@ public static class MySafeHelper
 
         Random rnd = new Random();
 
-        // Probably can optimize this block
-        int adminPassGenerator = rnd.Next(0, 9999);
+        int adminPassGenerator = 0;
+        bool isInRange;
 
-        while ((Enumerable.Range(adminPassLimits.lowerLimit, userPassword).Contains(adminPassGenerator) &&
-                (Enumerable.Range(userPassword, adminPassLimits.upperLimits).Contains(adminPassGenerator))))
+        do
         {
-            adminPassGenerator = rnd.Next(0, 9999);
-        }
+            adminPassGenerator = rnd.Next(0, 10000);
+
+            // Check if the generated number falls within the valid range
+            isInRange = adminPassLimits.lowerLimit <= adminPassLimits.upperLimits
+                ? adminPassGenerator >= adminPassLimits.lowerLimit &&
+                  adminPassGenerator <= adminPassLimits.upperLimits // Standard range
+                : adminPassGenerator >= adminPassLimits.upperLimits &&
+                  adminPassGenerator <= adminPassLimits.lowerLimit; // Wrapping range swap the limits
+        } while (!isInRange);
 
         // Fill in leading 0's 
         int curPasswordSize = adminPassGenerator.ToString().Length;
@@ -43,7 +49,7 @@ public static class MySafeHelper
         return adminPasswordBuilder.ToString();
     }
 
-    public static (int lowerLimit, int upperLimits) CalcLimits(int x)
+    public (int lowerLimit, int upperLimits) CalcLimits(int x)
     {
         // In a perfect world the lower and upper limit will be described. Keep in mind sometimes it will be greater. 
         int lowerLimit = x - 750;
@@ -62,19 +68,5 @@ public static class MySafeHelper
         }
 
         return (lowerLimit, upperLimit);
-    }
-
-    public static bool VerifyFourDigitCode(string password)
-    {
-        string pass = password.Trim();
-
-        int length = pass.Length;
-
-        if (length != 4)
-        {
-            return false;
-        }
-
-        return true;
     }
 }
