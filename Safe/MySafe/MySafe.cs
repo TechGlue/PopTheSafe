@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using Stateless;
 
 namespace Safe;
@@ -14,18 +13,19 @@ public class MySafe : ISafe
     private readonly IAdminCodeGenerator _adminCodeGenerator;
 
     // Safe fields and properties
-    private readonly ILogger<MySafe> _logger;
     public string SafeName { get; private set; }
-    public string Password { get; private set; } = "0000";
-    public string EnteredPassword { get; private set; } = String.Empty;
-    public string AdminPassword { get; private set; } = "0000";
+    private string Password { get; set; } = String.Empty;
+    private string EnteredPassword { get; set; } = String.Empty;
 
-    public MySafe( string safeName)
+    private string _adminPassword = String.Empty;
+
+    public MySafe(string safeName)
     {
         SafeName = safeName;
 
         // SafeStateMachine initialization
-        _safeStateMachine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
+        _safeStateMachine =
+            new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
         _adminCodeGenerator = new AdminCodeGenerator();
 
         // SafeStateMachine configuration flow 
@@ -40,13 +40,14 @@ public class MySafe : ISafe
         _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeOpen)
             .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeInProgrammingModeClosed);
 
-        _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeClosed)
-            .PermitReentry(SafeStates.Triggers.SafeCodeEntered)
-            .Permit(SafeStates.Triggers.PressLock, SafeStates.State.SafeLocked)
-            .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeInProgrammingModeOpen);
 
         _pinTrigger =
             _safeStateMachine.SetTriggerParameters<string>(SafeStates.Triggers.SafeCodeEntered);
+
+        _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeClosed)
+            .PermitReentry(SafeStates.Triggers.EnterNewPin)
+            .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeInProgrammingModeOpen)
+            .PermitIf(SafeStates.Triggers.PressLock, SafeStates.State.SafeLocked, () => Password != String.Empty);
 
         _safeStateMachine.Configure(SafeStates.State.SafeLocked)
             .PermitIf(_pinTrigger, SafeStates.State.SafeLockedPinEntered, (string password) =>
@@ -60,14 +61,9 @@ public class MySafe : ISafe
         _safeStateMachine.Configure(SafeStates.State.SafeLockedPinEntered)
             // permit only if the door open trigger is selected and the password is correct
             .PermitIf(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked,
-                () => EnteredPassword == Password)
+                () => EnteredPassword == Password || EnteredPassword == _adminPassword)
             .PermitIf(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeLocked,
-                () =>
-                {
-                    Console.WriteLine("Invalid password. Dig deep and remember.");
-                    return EnteredPassword != Password;
-                })
-            .Ignore(SafeStates.Triggers.EnterNewPin)
+                () => EnteredPassword != Password && EnteredPassword != _adminPassword)
             .Ignore(SafeStates.Triggers.PressResetCode)
             .Ignore(SafeStates.Triggers.PressLock);
     }
@@ -107,7 +103,7 @@ public class MySafe : ISafe
                     break;
                 }
 
-                AdminPassword = _adminCodeGenerator.CalculateAdminCode(password);
+                _adminPassword = _adminCodeGenerator.CalculateAdminCode(password);
                 Password = password;
 
                 _safeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
@@ -137,7 +133,7 @@ public class MySafe : ISafe
                 "The safe is locked with a pin entered. Is it the correct pin? idk try opening the safe",
             _ => "Not sure how you got here. But we're here."
         };
-    
+
     public bool VerifyFourDigitCode(string password)
     {
         string pass = password.Trim();
