@@ -4,25 +4,23 @@ using static Safe.MySafeHelper;
 
 namespace Safe;
 
-public class MySafe
+public class MySafe : ISafe
 {
     // SafeStateMachine fields
     public readonly StateMachine<SafeStates.State, SafeStates.Triggers> SafeStateMachine;
 
     private readonly StateMachine<SafeStates.State, SafeStates.Triggers>.TriggerWithParameters<string>
-        _changedNeededParameters;
+        _PinTrigger;
 
-    // MySafe properties + fields
     private readonly ILogger<MySafe> _logger;
+
     private readonly TimeProvider _timeProvider;
     public string SafeName { get; private set; }
     public string Password { get; private set; } = "0000";
+    public string EnteredPassword { get; private set; } = String.Empty;
 
     public string AdminPassword { get; private set; } = "0000";
 
-    // modes for the client to interact with the safe
-    public bool SafeInProgrammingMode { get; private set; }
-    public bool SafeIsLocked { get; private set; }
     public DateTimeOffset CreationTime { get; private set; }
     public DateTimeOffset LastPasswordUpdateTime { get; private set; } = DateTime.Now;
     public DateTimeOffset LastAdminPasswordUpdateTime { get; private set; } = DateTime.Now;
@@ -34,223 +32,122 @@ public class MySafe
         SafeName = safeName;
         CreationTime = _timeProvider.GetUtcNow();
 
-        // Default state for the safe is SafeClosedUnlocked
-        // _logger.LogInformation("Creating a new safe with name: {SafeName}", SafeName);
         SafeStateMachine = new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
-        FetchSafeState();
 
         // SafeStateMachine configuration flow 
         SafeStateMachine.Configure(SafeStates.State.SafeClosedUnlocked)
             .PermitReentry(SafeStates.Triggers.CloseSafeDoor)
             .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked)
-            .Ignore(SafeStates.Triggers.PressResetCode) // ignore if the reset code is pressed
-            .OnEntry(OnSafeClosedUnlockedEntry)
-            .OnExit(OnSafeClosedUnlockedExit);
+            .Ignore(SafeStates.Triggers.PressResetCode); // ignore if the reset code is pressed
 
         SafeStateMachine.Configure(SafeStates.State.SafeOpenUnlocked)
             .PermitReentry(SafeStates.Triggers.OpenSafeDoor)
             .Permit(SafeStates.Triggers.PressResetCode, SafeStates.State.SafeInProgrammingModeOpen)
-            .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeClosedUnlocked)
-            .OnEntry(OnSafeOpenUnlockedEntry)
-            .OnExit(OnSafeOpenUnlockedExit);
+            .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeClosedUnlocked);
 
         SafeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeOpen)
             .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeInProgrammingModeClosed)
             .PermitReentry(SafeStates.Triggers.OpenSafeDoor)
-            .Ignore(SafeStates.Triggers.EnterNewPin)
-            .OnEntry(OnSafeOpenProgrammingModeEntry)
-            .OnExit(OnSafeOpenProgrammingModeExit);
+            .Ignore(SafeStates.Triggers.EnterNewPin);
 
         SafeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeClosed)
-            .Permit(SafeStates.Triggers.EnterNewPin, SafeStates.State.SafeLocked)
+            .Permit(SafeStates.Triggers.PressLock, SafeStates.State.SafeLocked)
             .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeInProgrammingModeOpen)
-            .PermitReentry(SafeStates.Triggers.CloseSafeDoor)
-            .OnEntry(OnSafeInProgrammingModeClosedEntry)
-            .OnExit(OnSafeInProgrammingModeClosedExit);
+            .PermitReentry(SafeStates.Triggers.CloseSafeDoor);
 
-        _changedNeededParameters =
-            SafeStateMachine.SetTriggerParameters<string>(SafeStates.Triggers.CorrectSafeCodeEntered);
+        _PinTrigger =
+            SafeStateMachine.SetTriggerParameters<string>(SafeStates.Triggers.SafeCodeEntered);
 
         SafeStateMachine.Configure(SafeStates.State.SafeLocked)
-            .PermitIf(_changedNeededParameters, SafeStates.State.SafeClosedUnlocked,
-                (string password) => password == Password || password == AdminPassword)
+            .PermitIf(_PinTrigger, SafeStates.State.SafeLockedPinEntered, (string password) =>
+            {
+                EnteredPassword = password;
+                return EnteredPassword != String.Empty;
+            })
             .Ignore(SafeStates.Triggers.OpenSafeDoor)
-            .Ignore(SafeStates.Triggers.CloseSafeDoor)
-            .OnEntry(OnSafeClosedLockedEntry)
-            .OnExit(OnSafeClosedLockedExitValidPassword);
+            .Ignore(SafeStates.Triggers.CloseSafeDoor);
+
+        SafeStateMachine.Configure(SafeStates.State.SafeLockedPinEntered)
+            // permit only if the door open trigger is selected and the password is correct
+            .PermitIf(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked,
+                () => EnteredPassword == Password)
+            .PermitIf(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeLocked,
+                () =>
+                {
+                    Console.WriteLine("Invalid password. Dig deep to remember.");
+                    return EnteredPassword != Password;
+                })
+            .Ignore(SafeStates.Triggers.EnterNewPin)
+            .Ignore(SafeStates.Triggers.PressResetCode)
+            .Ignore(SafeStates.Triggers.PressLock);
     }
 
-    private void OnSafeInProgrammingModeClosedEntry()
-    {
-        FetchSafeState();
-        // _logger.LogInformation("MySafe entered SafeInProgrammingMode closed.");
-    }
-
-    private void OnSafeInProgrammingModeClosedExit()
-    {
-        DisableSafeProgrammingMode();
-        FetchSafeState();
-        // _logger.LogInformation("MySafe left SafeInProgrammingMode closed.");
-    }
-
-    private void OnSafeClosedLockedEntry()
-    {
-        EnableSafeLock();
-        FetchSafeState();
-        // _logger.LogInformation("MySafe entered SafeClosedLocked state.");
-    }
-
-    private void OnSafeClosedLockedExitValidPassword()
-    {
-        DisableSafeLock();
-        FetchSafeState();
-        // _logger.LogInformation("MySafe left SafeClosedLocked state.");
-    }
-
-    private void EnableSafeLock()
-    {
-        SafeIsLocked = true;
-    }
-
-    private void DisableSafeLock()
-    {
-        SafeIsLocked = false;
-    }
-
-    private void OnSafeOpenProgrammingModeEntry()
-    {
-        EnableSafeProgrammingMode();
-        FetchSafeState();
-        // _logger.LogInformation("MySafe entered SafeProgrammingMode state.");
-    }
-
-    public void EnterNewPin(string newPin)
-    {
-        if (VerifyFourDigitCode(newPin) is false)
-        {
-            // _logger.LogError("Invalid password format. Please enter a 4 digit password.");
-            // throw new ArgumentException("Invalid password format. Please enter a 4 digit password.");
-            return;
-        }
-
-        if (SafeStateMachine.IsInState(SafeStates.State.SafeInProgrammingModeOpen))
-        {
-            Console.WriteLine("Door is open. Close door to enter programming mode.");
-            return;
-        }
-
-        ChangeSafePassword(newPin);
-        SafeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
-    }
-
-    private void OnSafeOpenProgrammingModeExit()
-    {
-        FetchSafeState();
-        // _logger.LogInformation("MySafe left SafeProgrammingMode state.");
-    }
-
-    private void EnableSafeProgrammingMode()
-    {
-        SafeInProgrammingMode = true;
-    }
-
-    private void DisableSafeProgrammingMode()
-    {
-        SafeInProgrammingMode = false;
-    }
-
-    private void OnSafeOpenUnlockedExit()
-    {
-        FetchSafeState();
-        // _logger.LogInformation("MySafe left SafeOpenUnlocked state.");
-    }
-
-    private void OnSafeOpenUnlockedEntry()
-    {
-        FetchSafeState();
-        // _logger.LogInformation("MySafe entered SafeOpenUnlocked state.");
-    }
-
-    private void OnSafeClosedUnlockedExit()
-    {
-        FetchSafeState();
-        // _logger.LogInformation("MySafe left SafeClosedUnlocked state.");
-    }
-
-    private void OnSafeClosedUnlockedEntry()
-    {
-        FetchSafeState();
-        // _logger.LogInformation("MySafe left SafeClosedUnlocked state.");
-    }
-
-    // MySafeAPI
-    public void FetchSafeState()
-    {
-        // _logger.LogInformation("MySafe {SafeName} is currently in {State} state", SafeName, SafeStateMachine.State);
-    }
-
-    public void OpenSafeDoor()
+    public void Open()
     {
         SafeStateMachine.Fire(SafeStates.Triggers.OpenSafeDoor);
     }
 
-    public void PressResetCode()
-    {
-        SafeStateMachine.Fire(SafeStates.Triggers.PressResetCode);
-    }
-
-
-    public void CloseSafeDoor()
+    public void Close()
     {
         SafeStateMachine.Fire(SafeStates.Triggers.CloseSafeDoor);
     }
 
-    public void EnterSafeCode(string safeCode)
+    public void PressReset()
     {
-        if (VerifyFourDigitCode(safeCode) is false)
-        {
-            // _logger.LogError("Invalid password format. Please enter a 4 digit password.");
-            // throw new ArgumentException("Invalid password format. Please enter a 4 digit password.");
-            return;
-        }
+        SafeStateMachine.Fire(SafeStates.Triggers.PressResetCode);
+    }
 
-        try
+    public void PressLock()
+    {
+        SafeStateMachine.Fire(SafeStates.Triggers.PressLock);
+    }
+
+    public void EnterCode(string password)
+    {
+        switch (SafeStateMachine.State)
         {
-            SafeStateMachine.Fire(_changedNeededParameters, safeCode);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Invalid password. Please enter the correct password. \n {ex}");
-            // _logger.LogError("Invalid password. Please enter the correct password. \n {exception}", ex);
+            case SafeStates.State.SafeInProgrammingModeOpen:
+                Console.WriteLine("Safe door is open. Please close door to set a password.");
+                break;
+            case SafeStates.State.SafeInProgrammingModeClosed:
+                if (VerifyFourDigitCode(password) is false)
+                {
+                    Console.WriteLine(
+                        "Invalid password format. Look at your fingers as you type important passwords please.");
+                    break;
+                }
+
+                AdminPassword = CalculateAdminCode(password);
+                Password = password;
+
+                SafeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
+
+                LastPasswordUpdateTime = _timeProvider.GetUtcNow();
+                LastAdminPasswordUpdateTime = _timeProvider.GetUtcNow();
+                break;
+
+            case SafeStates.State.SafeLocked:
+                // password entered but who's the imposter?
+                SafeStateMachine.Fire(_PinTrigger, password);
+                break;
         }
     }
 
-    public void ChangeSafePassword(string password)
-    {
-        // Ensure the password is of 4 digits. throw exceptions
-        if (VerifyFourDigitCode(password) is not true)
+    public string Describe() =>
+        SafeStateMachine.State switch
         {
-            // _logger.LogError("Invalid password format. Please enter a 4 digit password.");
-            // throw new ArgumentException("Invalid password format. Please enter a 4 digit password");
-            Console.WriteLine("Invalid password format.");
-            return;
-        }
-
-        if (SafeStateMachine.IsInState(SafeStates.State.SafeInProgrammingModeOpen))
-        {
-            Console.WriteLine("Safe door is open. Close door to set password.");
-            return;
-        }
-
-        // update the admin password for the safe
-        AdminPassword = CalculateAdminCode(password);
-
-        // update safe pass word with the user password 
-        Password = password;
-
-
-        // update the times for logging purposes
-        LastPasswordUpdateTime = _timeProvider.GetUtcNow();
-        LastAdminPasswordUpdateTime = _timeProvider.GetUtcNow();
-    }
+            SafeStates.State.SafeClosedUnlocked =>
+                "The safe is closed but a deep, deep fear in you leads you to believe it is not locked",
+            SafeStates.State.SafeOpenUnlocked =>
+                "The safe is open and unlocked; it is the least safe safe you have ever seen",
+            SafeStates.State.SafeInProgrammingModeOpen =>
+                "The safe door is open, it is currently unlocked and in programming mode",
+            SafeStates.State.SafeInProgrammingModeClosed =>
+                "The safe door is closed, it is currently unlocked and in programming mode",
+            SafeStates.State.SafeLocked =>
+                "The safe is locked and all your carefully collected useless junk is secure",
+            SafeStates.State.SafeLockedPinEntered =>
+                "The safe is locked with a pin entered. Is it the correct pin? idk try opening the safe",
+            _ => "Not sure how you got here. But we're here."
+        };
 }

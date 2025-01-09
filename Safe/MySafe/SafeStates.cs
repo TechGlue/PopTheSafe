@@ -1,21 +1,24 @@
 namespace Safe;
 
-public class SafeStates{
-    public enum State 
+public class SafeStates
+{
+    public enum State
     {
         SafeClosedUnlocked,
         SafeOpenUnlocked,
         SafeInProgrammingModeOpen,
         SafeInProgrammingModeClosed,
-        SafeLocked
+        SafeLocked,
+        SafeLockedPinEntered
     }
 
     public enum Triggers
     {
-        OpenSafeDoor, 
-        CloseSafeDoor, 
-        PressResetCode, 
-        EnterNewPin, 
-        CorrectSafeCodeEntered, 
-    } 
+        OpenSafeDoor,
+        CloseSafeDoor,
+        PressResetCode,
+        PressLock,
+        EnterNewPin,
+        SafeCodeEntered,
+    }
 };

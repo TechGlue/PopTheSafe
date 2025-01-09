@@ -1,7 +1,4 @@
-﻿// todo:
-// -  Figure out the issue with the algorithm for generating the admin code 
-
-using Safe;
+﻿using Safe;
 using Microsoft.Extensions.Logging;
 
 using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
@@ -10,113 +7,53 @@ MySafe newSafe = new MySafe(TimeProvider.System, logger, "MySafe");
 
 bool interactiveSafe = true;
 
+// choices
+var actions = new Dictionary<int, Action<ISafe>>()
+{
+    { 1, safe => safe.Open() },
+    { 2, safe => safe.Close() },
+    {
+        3, safe =>
+        {
+            Console.Write("\nEnter the PIN: ");
+            var pin = Console.ReadLine();
+            if (pin != null) safe.EnterCode(pin);
+        }
+    },
+    { 4, safe => safe.PressReset() },
+    { 5, safe => safe.PressLock() },
+};
+
 while (interactiveSafe)
 {
-    Console.WriteLine("MySafe is in state: " + newSafe.SafeStateMachine.State);
-    Console.WriteLine("Admin Code: " + newSafe.AdminPassword);
-
-    if (newSafe.SafeIsLocked is false && newSafe.SafeInProgrammingMode is false)
+    while (true)
     {
-        Console.WriteLine(
-            "1. Open MySafe Door\n2. Close MySafe Door\n3. Press Reset Code\n0. Exit");
-        string? input = Console.ReadLine();
+        Console.WriteLine("\n" + newSafe.Describe());
+        Console.WriteLine("What will you do?");
+        Console.WriteLine("1) Open the door");
+        Console.WriteLine("2) Close the door");
+        Console.WriteLine("3) Enter a pin");
+        Console.WriteLine("4) Press reset");
+        Console.WriteLine("5) Press lock");
 
-        if (input is not null)
+        // choice then is the number 
+        var action = int.TryParse(Console.ReadKey().KeyChar.ToString(), out int choice) switch
         {
-            Console.WriteLine("You entered: " + input);
-
-            switch (input)
+            true => actions.ContainsKey(choice) switch
             {
-                case "1":
-                    newSafe.OpenSafeDoor();
-                    break;
-                case "2":
-                    newSafe.CloseSafeDoor();
-                    break;
-                case "3":
-                    newSafe.PressResetCode();
-                    break;
-                case "0":
-                    interactiveSafe = false;
-                    break;
-                default:
-                    Console.WriteLine("Invalid choice. Please try again.");
-                    break;
-            }
+                true => actions[choice],
+                false => actions[-1],
+            },
+            false => actions[-1],
+        };
+
+        try
+        {
+            action(newSafe);
         }
-    }
-
-    else if (newSafe.SafeInProgrammingMode)
-    {
-        Console.WriteLine(
-            "1. Open MySafe Door\n2. Close MySafe Door \n3. Enter new 4-digit safe pin\n0. Exit\n");
-        string? input = Console.ReadLine();
-
-        if (input is not null)
+        catch (InvalidOperationException ex)
         {
-            Console.WriteLine("You entered: " + input);
-
-            switch (input)
-            {
-                case "1":
-                    newSafe.OpenSafeDoor();
-                    break;
-                case "2":
-                    newSafe.CloseSafeDoor();
-                    break;
-                case "3":
-                    Console.WriteLine("Enter new 4-digit safe pin: ");
-                    string? pin = Console.ReadLine();
-                    if (pin is not null)
-                    {
-                        newSafe.EnterNewPin(pin);
-                    }
-                    break;
-                case "0":
-                    interactiveSafe = false;
-                    break;
-                default:
-                    Console.WriteLine("Invalid choice. Please try again.");
-                    break;
-            }
-        }
-    }
-    else if (newSafe.SafeIsLocked && newSafe.SafeInProgrammingMode is false)
-    {
-        Console.WriteLine(
-            "1. Open MySafe Door\n2. Close MySafe Door\n3. Unlock MySafe\n0. Exit");
-
-        string? input = Console.ReadLine();
-
-        if (input is not null)
-        {
-            Console.WriteLine("You entered: " + input);
-
-            switch (input)
-            {
-                case "1":
-                    newSafe.OpenSafeDoor();
-                    break;
-                case "2":
-                    newSafe.CloseSafeDoor();
-                    break;
-                case "3":
-                    Console.WriteLine("Enter 4-digit safe pin: ");
-                    string? pin = Console.ReadLine();
-                    if (pin != String.Empty && pin is not null)
-                    {
-                        newSafe.EnterSafeCode(pin);
-                    }
-                    break;
-                case "0":
-                    interactiveSafe = false;
-                    break;
-                default:
-                    Console.WriteLine("Invalid choice. Please try again.");
-                    break;
-            }
+            Console.WriteLine("Unbelievable nonsense, what you've done here.\n" + ex);
         }
     }
 }
-
-Console.WriteLine("Exiting safe...");
