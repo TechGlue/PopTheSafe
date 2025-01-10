@@ -12,7 +12,7 @@ var actions = new Dictionary<int, Action<ISafe>>()
         {
             Console.Write("\nEnter Safe PIN: ");
             var pin = Console.ReadLine();
-            if (pin != null) safe.EnterCode(pin);
+            if (pin != null) safe.SetCode(pin);
         }
     },
     { 4, safe => safe.PressReset() },

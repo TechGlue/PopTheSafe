@@ -7,7 +7,7 @@ public class MySafe : ISafe
     // SafeStateMachine fields
     private readonly StateMachine<SafeStates.State, SafeStates.Triggers> _safeStateMachine;
 
-    private readonly StateMachine<SafeStates.State, SafeStates.Triggers>.TriggerWithParameters<string>
+    private StateMachine<SafeStates.State, SafeStates.Triggers>.TriggerWithParameters<string>
         _pinTrigger;
 
     private readonly IAdminCodeGenerator _adminCodeGenerator;
@@ -26,46 +26,71 @@ public class MySafe : ISafe
         // SafeStateMachine initialization
         _safeStateMachine =
             new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
+
         _adminCodeGenerator = new AdminCodeGenerator();
 
         // SafeStateMachine configuration flow 
+        ConfigurationStateMachine();
+    }
+
+    private void ConfigurationStateMachine()
+    {
         _safeStateMachine.Configure(SafeStates.State.SafeClosedUnlocked)
             .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked);
 
         _safeStateMachine.Configure(SafeStates.State.SafeOpenUnlocked)
-            .PermitReentry(SafeStates.Triggers.OpenSafeDoor)
             .Permit(SafeStates.Triggers.PressResetCode, SafeStates.State.SafeInProgrammingModeOpen)
             .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeClosedUnlocked);
 
         _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeOpen)
             .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeInProgrammingModeClosed);
 
-
         _pinTrigger =
             _safeStateMachine.SetTriggerParameters<string>(SafeStates.Triggers.SafeCodeEntered);
 
+        // this the block we are working on 
         _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeClosed)
-            .PermitReentry(SafeStates.Triggers.EnterNewPin)
             .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeInProgrammingModeOpen)
-            .PermitIf(SafeStates.Triggers.PressLock, SafeStates.State.SafeLocked, () => Password != String.Empty);
+            .PermitIf(
+                _pinTrigger,
+                SafeStates.State.SafeInProgrammingModePinEntered, (string password) =>
+                {
+                    if (string.IsNullOrEmpty(password))
+                    {
+                        return false;
+                    }
+
+                    // Generate admin password
+                    _adminPassword = _adminCodeGenerator.CalculateAdminCode(password);
+
+                    // Set user provided password
+                    Password = password;
+                    return true;
+                }
+            );
+
+
+        _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModePinEntered)
+            .Permit(SafeStates.Triggers.PressLock, SafeStates.State.SafeLocked);
 
         _safeStateMachine.Configure(SafeStates.State.SafeLocked)
             .PermitIf(_pinTrigger, SafeStates.State.SafeLockedPinEntered, (string password) =>
             {
+                if (string.IsNullOrEmpty(password))
+                {
+                    return false;
+                }
+
                 EnteredPassword = password;
-                return EnteredPassword != String.Empty;
-            })
-            .Ignore(SafeStates.Triggers.OpenSafeDoor)
-            .Ignore(SafeStates.Triggers.CloseSafeDoor);
+                return true;
+            });
 
         _safeStateMachine.Configure(SafeStates.State.SafeLockedPinEntered)
             // permit only if the door open trigger is selected and the password is correct
             .PermitIf(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeOpenUnlocked,
                 () => EnteredPassword == Password || EnteredPassword == _adminPassword)
             .PermitIf(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeLocked,
-                () => EnteredPassword != Password && EnteredPassword != _adminPassword)
-            .Ignore(SafeStates.Triggers.PressResetCode)
-            .Ignore(SafeStates.Triggers.PressLock);
+                () => EnteredPassword != Password && EnteredPassword != _adminPassword);
     }
 
     public void Open()
@@ -88,29 +113,14 @@ public class MySafe : ISafe
         _safeStateMachine.Fire(SafeStates.Triggers.PressLock);
     }
 
-    public void EnterCode(string password)
+    public void SetCode(string password)
     {
-        switch (_safeStateMachine.State)
+        if (VerifyFourDigitCode(password) is false)
         {
-            case SafeStates.State.SafeInProgrammingModeOpen:
-                break;
-            case SafeStates.State.SafeInProgrammingModeClosed:
-                if (VerifyFourDigitCode(password) is false)
-                {
-                    break;
-                }
-
-                _adminPassword = _adminCodeGenerator.CalculateAdminCode(password);
-                Password = password;
-
-                _safeStateMachine.Fire(SafeStates.Triggers.EnterNewPin);
-
-                break;
-
-            case SafeStates.State.SafeLocked:
-                _safeStateMachine.Fire(_pinTrigger, password);
-                break;
+            return;
         }
+
+        _safeStateMachine.Fire(_pinTrigger, password);
     }
 
     public string Describe() =>
@@ -128,6 +138,8 @@ public class MySafe : ISafe
                 "The safe is locked and all your carefully collected useless junk is secure",
             SafeStates.State.SafeLockedPinEntered =>
                 "The safe is locked with a pin entered. Is it the correct pin? idk try opening the safe",
+            SafeStates.State.SafeInProgrammingModePinEntered =>
+                "The safe is in programming mode with a pin entered. Are we going to lock the safe or keep it unlocked?",
             _ => "Not sure how you got here. But we're here."
         };
 

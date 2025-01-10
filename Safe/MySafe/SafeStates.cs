@@ -8,6 +8,7 @@ public class SafeStates
         SafeOpenUnlocked,
         SafeInProgrammingModeOpen,
         SafeInProgrammingModeClosed,
+        SafeInProgrammingModePinEntered,
         SafeLocked,
         SafeLockedPinEntered
     }
@@ -18,7 +19,6 @@ public class SafeStates
         CloseSafeDoor,
         PressResetCode,
         PressLock,
-        EnterNewPin,
         SafeCodeEntered,
     }
 };

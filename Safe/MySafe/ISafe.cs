@@ -6,6 +6,6 @@ public interface ISafe
     void Close();
     void PressReset();
     void PressLock();
-    void EnterCode(string password);
+    void SetCode(string password);
     string Describe();
 }
