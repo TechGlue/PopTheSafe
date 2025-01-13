@@ -3,7 +3,7 @@
 MySafe newSafe = new MySafe("MySafe");
 
 // choices
-var actions = new Dictionary<int, Action<ISafe>>()
+var actions = new Dictionary<int, Func<ISafe, SafeResponse>>()
 {
     { 1, safe => safe.Open() },
     { 2, safe => safe.Close() },
@@ -11,8 +11,11 @@ var actions = new Dictionary<int, Action<ISafe>>()
         3, safe =>
         {
             Console.Write("\nEnter Safe PIN: ");
-            var pin = Console.ReadLine();
-            if (pin != null) safe.SetCode(pin);
+            var pin = Console.ReadLine() ?? "";
+            SafeResponse safeResponse = new SafeResponse();
+
+            safe.SetCode(pin, result => safeResponse = result);
+            return safeResponse;
         }
     },
     { 4, safe => safe.PressReset() },
@@ -40,12 +43,10 @@ while (true)
         false => actions[-1],
     };
 
-    try
+    var result = action(newSafe);
+    
+    if (!result.isSuccessful)
     {
-        action(newSafe);
-    }
-    catch (InvalidOperationException)
-    {
-        Console.WriteLine("Unbelievable nonsense, what you've done here.\n");
+        Console.WriteLine($"Failed: {result.isDetail}");
     }
 }

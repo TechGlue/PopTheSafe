@@ -2,10 +2,10 @@ namespace Safe;
 
 public interface ISafe
 {
-    void Open();
-    void Close();
-    void PressReset();
-    void PressLock();
-    void SetCode(string password);
+    SafeResponse Open();
+    SafeResponse Close();
+    SafeResponse PressReset();
+    SafeResponse PressLock();
+    SafeResponse SetCode(string password, Action<SafeResponse> resultsHandler);
     string Describe();
 }

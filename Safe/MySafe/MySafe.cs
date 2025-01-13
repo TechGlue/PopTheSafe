@@ -7,7 +7,7 @@ public class MySafe : ISafe
     // SafeStateMachine fields
     private readonly StateMachine<SafeStates.State, SafeStates.Triggers> _safeStateMachine;
 
-    private StateMachine<SafeStates.State, SafeStates.Triggers>.TriggerWithParameters<string>
+    private StateMachine<SafeStates.State, SafeStates.Triggers>.TriggerWithParameters<string, Action<SafeResponse>>
         _pinTrigger;
 
     private readonly IAdminCodeGenerator _adminCodeGenerator;
@@ -46,25 +46,29 @@ public class MySafe : ISafe
             .Permit(SafeStates.Triggers.CloseSafeDoor, SafeStates.State.SafeInProgrammingModeClosed);
 
         _pinTrigger =
-            _safeStateMachine.SetTriggerParameters<string>(SafeStates.Triggers.SafeCodeEntered);
+            _safeStateMachine.SetTriggerParameters<string, Action<SafeResponse>>(SafeStates.Triggers.SafeCodeEntered);
 
         // this the block we are working on 
         _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeClosed)
             .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeInProgrammingModeOpen)
             .PermitIf(
                 _pinTrigger,
-                SafeStates.State.SafeInProgrammingModePinEntered, (string password) =>
+                SafeStates.State.SafeInProgrammingModePinEntered,
+                (string password, Action<SafeResponse> safeResponse) =>
                 {
                     if (string.IsNullOrEmpty(password))
                     {
+                        safeResponse(SafeResponse.Fail("Passed in password is null or empty."));
                         return false;
                     }
 
                     // Generate admin password
                     _adminPassword = _adminCodeGenerator.CalculateAdminCode(password);
 
+
                     // Set user provided password
                     Password = password;
+                    safeResponse(SafeResponse.Ok());
                     return true;
                 }
             );
@@ -74,16 +78,21 @@ public class MySafe : ISafe
             .Permit(SafeStates.Triggers.PressLock, SafeStates.State.SafeLocked);
 
         _safeStateMachine.Configure(SafeStates.State.SafeLocked)
-            .PermitIf(_pinTrigger, SafeStates.State.SafeLockedPinEntered, (string password) =>
-            {
-                if (string.IsNullOrEmpty(password))
+            .PermitIf(_pinTrigger, SafeStates.State.SafeLockedPinEntered,
+                (string password, Action<SafeResponse> safeResponse) =>
                 {
-                    return false;
-                }
+                    if (string.IsNullOrEmpty(password))
+                    {
+                        
+                        safeResponse(SafeResponse.Fail("Passed in password is null or empty."));
+                        return false;
+                    }
 
-                EnteredPassword = password;
-                return true;
-            });
+                    EnteredPassword = password;
+                    
+                    safeResponse(SafeResponse.Ok());
+                    return true;
+                });
 
         _safeStateMachine.Configure(SafeStates.State.SafeLockedPinEntered)
             // permit only if the door open trigger is selected and the password is correct
@@ -93,34 +102,77 @@ public class MySafe : ISafe
                 () => EnteredPassword != Password && EnteredPassword != _adminPassword);
     }
 
-    public void Open()
+    public SafeResponse Open()
     {
-        _safeStateMachine.Fire(SafeStates.Triggers.OpenSafeDoor);
-    }
-
-    public void Close()
-    {
-        _safeStateMachine.Fire(SafeStates.Triggers.CloseSafeDoor);
-    }
-
-    public void PressReset()
-    {
-        _safeStateMachine.Fire(SafeStates.Triggers.PressResetCode);
-    }
-
-    public void PressLock()
-    {
-        _safeStateMachine.Fire(SafeStates.Triggers.PressLock);
-    }
-
-    public void SetCode(string password)
-    {
-        if (VerifyFourDigitCode(password) is false)
+        try
         {
-            return;
+            _safeStateMachine.Fire(SafeStates.Triggers.OpenSafeDoor);
+            return SafeResponse.Ok();
         }
+        catch (InvalidOperationException invalidOperation)
+        {
+            return SafeResponse.Fail(invalidOperation.Message);
+        }
+    }
 
-        _safeStateMachine.Fire(_pinTrigger, password);
+    public SafeResponse Close()
+    {
+        try
+        {
+            _safeStateMachine.Fire(SafeStates.Triggers.CloseSafeDoor);
+            return SafeResponse.Ok();
+        }
+        catch (InvalidOperationException invalidOperation)
+        {
+            return SafeResponse.Fail(invalidOperation.Message);
+        }
+    }
+
+    public SafeResponse PressReset()
+    {
+        try
+        {
+            _safeStateMachine.Fire(SafeStates.Triggers.PressResetCode);
+            return SafeResponse.Ok();
+        }
+        catch (InvalidOperationException invalidOperation)
+        {
+            return SafeResponse.Fail(invalidOperation.Message);
+        }
+    }
+
+    public SafeResponse PressLock()
+    {
+        try
+        {
+            _safeStateMachine.Fire(SafeStates.Triggers.PressLock);
+            return SafeResponse.Ok();
+        }
+        catch (InvalidOperationException invalidOperation)
+        {
+            return SafeResponse.Fail(invalidOperation.Message);
+        }
+    }
+
+    public SafeResponse SetCode(string password, Action<SafeResponse> resultsHandler)
+    {
+        try
+        {
+            if (VerifyFourDigitCode(password) is false)
+            {
+                throw new ArgumentException("Invalid password format. Ensure it's numerical and 4-digits.");
+            }
+
+            _safeStateMachine.Fire(_pinTrigger, password, resultsHandler);
+
+            resultsHandler(SafeResponse.Ok());
+            return SafeResponse.Ok();
+        }
+        catch (Exception ex)
+        {
+            resultsHandler(SafeResponse.Fail(ex.Message));
+            return SafeResponse.Fail(ex.Message);
+        }
     }
 
     public string Describe() =>
