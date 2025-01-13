@@ -65,7 +65,6 @@ public class MySafe : ISafe
                     // Generate admin password
                     _adminPassword = _adminCodeGenerator.CalculateAdminCode(password);
 
-
                     // Set user provided password
                     Password = password;
                     safeResponse(SafeResponse.Ok());
@@ -83,13 +82,12 @@ public class MySafe : ISafe
                 {
                     if (string.IsNullOrEmpty(password))
                     {
-                        
                         safeResponse(SafeResponse.Fail("Passed in password is null or empty."));
                         return false;
                     }
 
                     EnteredPassword = password;
-                    
+
                     safeResponse(SafeResponse.Ok());
                     return true;
                 });
@@ -164,15 +162,13 @@ public class MySafe : ISafe
             }
 
             _safeStateMachine.Fire(_pinTrigger, password, resultsHandler);
-
-            resultsHandler(SafeResponse.Ok());
-            return SafeResponse.Ok();
         }
         catch (Exception ex)
         {
             resultsHandler(SafeResponse.Fail(ex.Message));
-            return SafeResponse.Fail(ex.Message);
         }
+
+        return SafeResponse.Ok();
     }
 
     public string Describe() =>
@@ -189,7 +185,7 @@ public class MySafe : ISafe
             SafeStates.State.SafeLocked =>
                 "The safe is locked and all your carefully collected useless junk is secure",
             SafeStates.State.SafeLockedPinEntered =>
-                "The safe is locked with a pin entered. Is it the correct pin? idk try opening the safe",
+                "The safe is locked with a pin entered. Is it the correct pin? Idk try opening the safe",
             SafeStates.State.SafeInProgrammingModePinEntered =>
                 "The safe is in programming mode with a pin entered. Are we going to lock the safe or keep it unlocked?",
             _ => "Not sure how you got here. But we're here."
