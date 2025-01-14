@@ -11,18 +11,13 @@ public class MySafe : ISafe
         _pinTrigger;
 
     private readonly IAdminCodeGenerator _adminCodeGenerator;
-
-    // Safe fields and properties
-    public string SafeName { get; private set; }
     private string Password { get; set; } = String.Empty;
     private string EnteredPassword { get; set; } = String.Empty;
 
     private string _adminPassword = String.Empty;
 
-    public MySafe(string safeName, IAdminCodeGenerator adminCodeGenerator)
+    public MySafe(IAdminCodeGenerator adminCodeGenerator)
     {
-        SafeName = safeName;
-
         // SafeStateMachine initialization
         _safeStateMachine =
             new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);

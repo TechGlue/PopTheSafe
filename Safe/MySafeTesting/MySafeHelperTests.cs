@@ -21,8 +21,8 @@ public class MySafeHelperTests
     public void VerifyFourDigits_GivenInvalidFourDigitCode_ReturnsFalse(string digits)
     {
         // Arrange
-        
-        MySafe testSafe = new MySafe("TestSafe", _adminCodeGenerator);
+
+        MySafe testSafe = new MySafe(_adminCodeGenerator);
 
         // Act 
         bool output = testSafe.VerifyFourDigitCode(digits);
@@ -39,7 +39,7 @@ public class MySafeHelperTests
     public void VerifyFourDigits_GivenValidFourDigitCode_ReturnsTrue(string digits)
     {
         // Arrange
-        MySafe testSafe = new MySafe("TestSafe", _adminCodeGenerator);
+        MySafe testSafe = new MySafe(_adminCodeGenerator);
 
         // Act 
         bool output = testSafe.VerifyFourDigitCode(digits);
