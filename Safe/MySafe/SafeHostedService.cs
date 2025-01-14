@@ -55,7 +55,7 @@ public class SafeHostedService : IHostedService
                         true => actions[choice],
                         false => actions[-1],
                     },
-                    false => actions[-1], // this line is hit when we get an error throws a key not found exception
+                    false => actions[-1], 
                 };
 
                 var result = action(_safe);
