@@ -19,7 +19,7 @@ public class MySafe : ISafe
 
     private string _adminPassword = String.Empty;
 
-    public MySafe(string safeName)
+    public MySafe(string safeName, IAdminCodeGenerator adminCodeGenerator)
     {
         SafeName = safeName;
 
@@ -27,7 +27,7 @@ public class MySafe : ISafe
         _safeStateMachine =
             new StateMachine<SafeStates.State, SafeStates.Triggers>(SafeStates.State.SafeClosedUnlocked);
 
-        _adminCodeGenerator = new AdminCodeGenerator();
+        _adminCodeGenerator = adminCodeGenerator;
 
         // SafeStateMachine configuration flow 
         ConfigurationStateMachine();
@@ -48,7 +48,6 @@ public class MySafe : ISafe
         _pinTrigger =
             _safeStateMachine.SetTriggerParameters<string, Action<SafeResponse>>(SafeStates.Triggers.SafeCodeEntered);
 
-        // this the block we are working on 
         _safeStateMachine.Configure(SafeStates.State.SafeInProgrammingModeClosed)
             .Permit(SafeStates.Triggers.OpenSafeDoor, SafeStates.State.SafeInProgrammingModeOpen)
             .PermitIf(

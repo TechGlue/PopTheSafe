@@ -1,6 +1,8 @@
 ﻿using Safe;
 
-MySafe newSafe = new MySafe("MySafe");
+// manually inject adminCodeGenerator into the created safe
+IAdminCodeGenerator adminCodeGenerator = new AdminCodeGenerator();
+MySafe newSafe = new MySafe("MySafe", adminCodeGenerator);
 
 // choices
 var actions = new Dictionary<int, Func<ISafe, SafeResponse>>()
@@ -44,7 +46,7 @@ while (true)
     };
 
     var result = action(newSafe);
-    
+
     if (!result.isSuccessful)
     {
         Console.WriteLine($"Failed: {result.isDetail}");

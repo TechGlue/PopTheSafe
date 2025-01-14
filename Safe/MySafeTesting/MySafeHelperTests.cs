@@ -6,6 +6,7 @@ namespace SafeTesting;
 public class MySafeHelperTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
+    private readonly IAdminCodeGenerator _adminCodeGenerator = new AdminCodeGenerator();
 
     public MySafeHelperTests(ITestOutputHelper testOutputHelper)
     {
@@ -20,7 +21,8 @@ public class MySafeHelperTests
     public void VerifyFourDigits_GivenInvalidFourDigitCode_ReturnsFalse(string digits)
     {
         // Arrange
-        MySafe testSafe = new MySafe("TestSafe");
+        
+        MySafe testSafe = new MySafe("TestSafe", _adminCodeGenerator);
 
         // Act 
         bool output = testSafe.VerifyFourDigitCode(digits);
@@ -37,7 +39,7 @@ public class MySafeHelperTests
     public void VerifyFourDigits_GivenValidFourDigitCode_ReturnsTrue(string digits)
     {
         // Arrange
-        MySafe testSafe = new MySafe("TestSafe");
+        MySafe testSafe = new MySafe("TestSafe", _adminCodeGenerator);
 
         // Act 
         bool output = testSafe.VerifyFourDigitCode(digits);
