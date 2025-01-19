@@ -21,7 +21,6 @@ public class MySafeHelperTests
     public void VerifyFourDigits_GivenInvalidFourDigitCode_ReturnsFalse(string digits)
     {
         // Arrange
-
         MySafe testSafe = new MySafe(_adminCodeGenerator);
 
         // Act 

@@ -1,17 +1,32 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Safe;
+using Serilog;
 
-// Accept the default builder
-// But, disable logging. For now, we'll use the console
-IHostBuilder hostBuilder = Host.CreateDefaultBuilder().ConfigureLogging((logging) => logging.ClearProviders());
+IHostBuilder hostBuilder = Host.CreateDefaultBuilder();
 
-// Inject what we need for SafeHostedService 
+// two-step initialization 
+// first step
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
 hostBuilder.ConfigureServices(serviceCollection =>
 {
+    // seconds step, add callback
+    serviceCollection.AddSerilog((services, loggerConfiguration) => loggerConfiguration
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console());
+    
+    
+    // Inject the spectre console logger
+    serviceCollection.AddSingleton<MySafeConsole>();
+    
     serviceCollection.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();
     serviceCollection.AddSingleton<ISafe, MySafe>();
+    
     serviceCollection.AddHostedService<SafeHostedService>();
 });
 

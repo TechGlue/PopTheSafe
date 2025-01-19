@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Safe;
 
@@ -6,16 +7,21 @@ public class SafeHostedService : IHostedService
 {
     private readonly ISafe _safe;
     private readonly IHostApplicationLifetime _lifetime;
+    private readonly IMySafeConsole _console;
+    private readonly ILogger<SafeHostedService> _logger;
 
-    public SafeHostedService( ISafe safe,
-        IHostApplicationLifetime lifetime)
+    public SafeHostedService(ISafe safe,
+        IHostApplicationLifetime lifetime, MySafeConsole console, ILogger<SafeHostedService> logger)
     {
+        _console = console;
         _safe = safe;
         _lifetime = lifetime;
+        _logger = logger;
     }
 
     private void SafeMenu()
     {
+        _console.Markup("[underline red]Hello[/] World!");
         var actions = new Dictionary<int, Func<ISafe, SafeResponse>>()
         {
             { 1, safe => safe.Open() },
@@ -47,7 +53,6 @@ public class SafeHostedService : IHostedService
                 Console.WriteLine("4) Press reset");
                 Console.WriteLine("5) Press lock");
 
-                // choice then is the number 
                 var action = int.TryParse(Console.ReadKey().KeyChar.ToString(), out int choice) switch
                 {
                     true => actions.ContainsKey(choice) switch
@@ -55,7 +60,7 @@ public class SafeHostedService : IHostedService
                         true => actions[choice],
                         false => actions[-1],
                     },
-                    false => actions[-1], 
+                    false => actions[-1],
                 };
 
                 var result = action(_safe);
@@ -74,16 +79,14 @@ public class SafeHostedService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        Console.WriteLine("Hosted Safe Service Started.");
-
+        _logger.LogInformation("Hosted Safe Service Started.");
         Task.Run(() => SafeMenu());
-
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        Console.WriteLine("Hosted Safe Service Stopped.");
+        _logger.LogInformation("Hosted Safe Service Stopped.");
         return Task.CompletedTask;
     }
 }
