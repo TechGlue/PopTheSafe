@@ -3,8 +3,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Safe;
 
-
-// initial attempt
 public class SafeHostedService : IHostedService
 {
     private readonly ISafe _safe;
@@ -21,8 +19,9 @@ public class SafeHostedService : IHostedService
         _logger = logger;
     }
 
-    private bool SafeMenu()
+    private void SafeMenu()
     {
+        _console.Markup("[underline red]Hello[/] World!");
         var actions = new Dictionary<int, Func<ISafe, SafeResponse>>()
         {
             { 1, safe => safe.Open() },
@@ -44,47 +43,45 @@ public class SafeHostedService : IHostedService
 
         try
         {
-            Console.WriteLine("\n" + _safe.Describe());
-            Console.WriteLine("What will you do?");
-            Console.WriteLine("1) Open the door");
-            Console.WriteLine("2) Close the door");
-            Console.WriteLine("3) Enter a pin");
-            Console.WriteLine("4) Press reset");
-            Console.WriteLine("5) Press lock");
-
-            var action = int.TryParse(Console.ReadKey().KeyChar.ToString(), out int choice) switch
+            while (true)
             {
-                true => actions.ContainsKey(choice) switch
+                Console.WriteLine("\n" + _safe.Describe());
+                Console.WriteLine("What will you do?");
+                Console.WriteLine("1) Open the door");
+                Console.WriteLine("2) Close the door");
+                Console.WriteLine("3) Enter a pin");
+                Console.WriteLine("4) Press reset");
+                Console.WriteLine("5) Press lock");
+
+                var action = int.TryParse(Console.ReadKey().KeyChar.ToString(), out int choice) switch
                 {
-                    true => actions[choice],
+                    true => actions.ContainsKey(choice) switch
+                    {
+                        true => actions[choice],
+                        false => actions[-1],
+                    },
                     false => actions[-1],
-                },
-                false => actions[-1],
-            };
+                };
 
-            var result = action(_safe);
+                var result = action(_safe);
 
-            if (!result.isSuccessful)
-            {
-                Console.WriteLine($"Failed: {result.isDetail}");
+                if (!result.isSuccessful)
+                {
+                    Console.WriteLine($"Failed: {result.isDetail}");
+                }
             }
         }
         catch (KeyNotFoundException)
         {
-            return false;
+            _lifetime.StopApplication();
         }
-
-        return true;
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Hosted Safe Service Started.");
-
-        while (SafeMenu())
-        {
-            await Task.Yield();
-        }
+        Task.Run(() => SafeMenu());
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
