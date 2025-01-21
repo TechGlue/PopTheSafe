@@ -3,6 +3,8 @@ using Microsoft.Extensions.Hosting;
 using Safe;
 using Serilog;
 
+// Todo: move menu that's printed to MySafeConsole
+
 IHostBuilder hostBuilder = Host.CreateDefaultBuilder();
 
 // two-step initialization 
@@ -21,7 +23,7 @@ hostBuilder.ConfigureServices(serviceCollection =>
         .WriteTo.Console());
     
     
-    // Inject the spectre console logger
+    // Inject the spectre console logger for the safe
     serviceCollection.AddSingleton<MySafeConsole>();
     
     serviceCollection.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();

@@ -3,7 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Safe;
 
-public class SafeHostedService : IHostedService
+// IHosted service is not good at having long-running tasks in the StartAsync because the application will not fully startup
+// Avoid long-running tasks in Start Async 
+public class SafeHostedService : BackgroundService
 {
     private readonly ISafe _safe;
     private readonly IHostApplicationLifetime _lifetime;
@@ -19,9 +21,8 @@ public class SafeHostedService : IHostedService
         _logger = logger;
     }
 
-    private void SafeMenu()
+    private Task<bool> SafeMenu()
     {
-        _console.Markup("[underline red]Hello[/] World!");
         var actions = new Dictionary<int, Func<ISafe, SafeResponse>>()
         {
             { 1, safe => safe.Open() },
@@ -43,50 +44,55 @@ public class SafeHostedService : IHostedService
 
         try
         {
-            while (true)
+            Console.WriteLine("\n" + _safe.Describe());
+            Console.WriteLine("What will you do?");
+            Console.WriteLine("1) Open the door");
+            Console.WriteLine("2) Close the door");
+            Console.WriteLine("3) Enter a pin");
+            Console.WriteLine("4) Press reset");
+            Console.WriteLine("5) Press lock");
+
+
+            var action = int.TryParse(Console.ReadKey().KeyChar.ToString(), out int choice) switch
             {
-                Console.WriteLine("\n" + _safe.Describe());
-                Console.WriteLine("What will you do?");
-                Console.WriteLine("1) Open the door");
-                Console.WriteLine("2) Close the door");
-                Console.WriteLine("3) Enter a pin");
-                Console.WriteLine("4) Press reset");
-                Console.WriteLine("5) Press lock");
-
-                var action = int.TryParse(Console.ReadKey().KeyChar.ToString(), out int choice) switch
+                true => actions.ContainsKey(choice) switch
                 {
-                    true => actions.ContainsKey(choice) switch
-                    {
-                        true => actions[choice],
-                        false => actions[-1],
-                    },
+                    true => actions[choice],
                     false => actions[-1],
-                };
+                },
+                false => actions[-1],
+            };
 
-                var result = action(_safe);
+            var result = action(_safe);
 
-                if (!result.isSuccessful)
-                {
-                    Console.WriteLine($"Failed: {result.isDetail}");
-                }
+            if (!result.isSuccessful)
+            {
+                Console.WriteLine($"Failed: {result.isDetail}");
             }
         }
         catch (KeyNotFoundException)
         {
-            _lifetime.StopApplication();
+            return Task.FromResult(false);
         }
+
+        return Task.FromResult(true);
     }
 
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Hosted Safe Service Started.");
-        Task.Run(() => SafeMenu());
-        return Task.CompletedTask;
-    }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    // This is where long-running loads should be stored
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Hosted Safe Service Stopped.");
-        return Task.CompletedTask;
+        // Await for 200ms to ensure startup
+        await Task.Delay(200, stoppingToken);
+
+        // Loop menu
+        bool activeMenu = true;
+
+        while (!stoppingToken.IsCancellationRequested && activeMenu)
+        {
+            activeMenu = await SafeMenu();
+        }
+
+        _lifetime.StopApplication();
     }
 }
