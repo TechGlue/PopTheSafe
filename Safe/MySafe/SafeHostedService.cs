@@ -3,9 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Safe;
 
-
-// initial attempt
-public class SafeHostedService : IHostedService
+public class SafeHostedService : BackgroundService
 {
     private readonly ISafe _safe;
     private readonly IHostApplicationLifetime _lifetime;
@@ -21,75 +19,14 @@ public class SafeHostedService : IHostedService
         _logger = logger;
     }
 
-    private bool SafeMenu()
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var actions = new Dictionary<int, Func<ISafe, SafeResponse>>()
-        {
-            { 1, safe => safe.Open() },
-            { 2, safe => safe.Close() },
-            {
-                3, safe =>
-                {
-                    Console.Write("\nEnter Safe PIN: ");
-                    var pin = Console.ReadLine() ?? "";
-                    SafeResponse safeResponse = new SafeResponse();
+        // 200ms delay to ensure application start up logs
+        await Task.Delay(200, stoppingToken);
 
-                    safe.SetCode(pin, result => safeResponse = result);
-                    return safeResponse;
-                }
-            },
-            { 4, safe => safe.PressReset() },
-            { 5, safe => safe.PressLock() },
-        };
+        await Task.Yield();
+        while (!stoppingToken.IsCancellationRequested && _console.SafeMenu(_safe)) ;
 
-        try
-        {
-            Console.WriteLine("\n" + _safe.Describe());
-            Console.WriteLine("What will you do?");
-            Console.WriteLine("1) Open the door");
-            Console.WriteLine("2) Close the door");
-            Console.WriteLine("3) Enter a pin");
-            Console.WriteLine("4) Press reset");
-            Console.WriteLine("5) Press lock");
-
-            var action = int.TryParse(Console.ReadKey().KeyChar.ToString(), out int choice) switch
-            {
-                true => actions.ContainsKey(choice) switch
-                {
-                    true => actions[choice],
-                    false => actions[-1],
-                },
-                false => actions[-1],
-            };
-
-            var result = action(_safe);
-
-            if (!result.isSuccessful)
-            {
-                Console.WriteLine($"Failed: {result.isDetail}");
-            }
-        }
-        catch (KeyNotFoundException)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Hosted Safe Service Started.");
-
-        while (SafeMenu())
-        {
-            await Task.Yield();
-        }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Hosted Safe Service Stopped.");
-        return Task.CompletedTask;
+        _lifetime.StopApplication();
     }
 }
