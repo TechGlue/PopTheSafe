@@ -6,7 +6,7 @@ public class MySafeConsole : IMySafeConsole
 {
     private readonly IAnsiConsole _console = AnsiConsole.Console;
 
-    public bool SafeMenu(ISafe safe)
+    public int SafeMenu(ISafe safe)
     {
         var actions = new Dictionary<int, Func<ISafe, SafeResponse>>()
         {
@@ -50,16 +50,16 @@ public class MySafeConsole : IMySafeConsole
 
             var result = action(safe);
 
-            if (!result.isSuccessful)
+            if (!result.IsSuccessful)
             {
-                Console.WriteLine($"Failed: {result.isDetail}");
+                Console.WriteLine($"Failed: {result.IsDetail}");
             }
         }
         catch (KeyNotFoundException)
         {
-            return false;
+            return -1;
         }
 
-        return true;
+        return 0;
     }
 }

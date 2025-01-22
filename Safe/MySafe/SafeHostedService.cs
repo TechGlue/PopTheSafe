@@ -25,7 +25,7 @@ public class SafeHostedService : BackgroundService
         await Task.Delay(200, stoppingToken);
 
         await Task.Yield();
-        while (!stoppingToken.IsCancellationRequested && _console.SafeMenu(_safe)) ;
+        while (!stoppingToken.IsCancellationRequested && _console.SafeMenu(_safe) != -1) ;
 
         _lifetime.StopApplication();
     }
