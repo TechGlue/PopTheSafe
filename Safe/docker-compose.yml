@@ -1,10 +1,23 @@
 services:
-  safe:
-    image: my-safe
-    build:
-      context: .
-      dockerfile: MySafe/Dockerfile
-    expose: 
-      - 8080
-    ports: 
-      - "8080:8080"
+    safe:
+      image: mysafe
+      build:
+        context: .
+        dockerfile: MySafe/Dockerfile
+      expose: 
+        - 8080
+      ports: 
+        - "8080:8080"
+
+    mysafeclient: 
+      image: mysafe-client
+      build:
+        context: .
+        dockerfile: MySafeClient/Dockerfile
+      expose: 
+        - 4200
+      ports: 
+        - "4200:4200"
+
+
+
