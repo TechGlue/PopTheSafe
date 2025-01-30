@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Safe;
+﻿using Safe;
 using Serilog;
 
-IHostBuilder hostBuilder = Host.CreateDefaultBuilder();
+
+var builder = WebApplication.CreateBuilder(args);
 
 // two-step initialization 
 // first step
@@ -12,22 +11,20 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 
-hostBuilder.ConfigureServices(serviceCollection =>
-{
-    // seconds step, add callback
-    serviceCollection.AddSerilog((services, loggerConfiguration) => loggerConfiguration
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .WriteTo.Console());
-    
-    
-    // Inject the spectre console for the safe CLI based UI
-    serviceCollection.AddSingleton<MySafeConsole>();
-    
-    serviceCollection.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();
-    serviceCollection.AddSingleton<ISafe, MySafe>();
-    
-    serviceCollection.AddHostedService<SafeHostedService>();
-});
+// seconds step, add callback
+builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
 
-await hostBuilder.RunConsoleAsync();
+builder.Services.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();
+builder.Services.AddSingleton<ISafe, MySafe>();
+
+// Todo: not sure what we are going to do wiwth this now. move the service to an endpoint
+// builder.Services.AddHostedService<SafeHostedService>();
+
+var app = builder.Build();
+
+app.MapGet("/", () => "Safe API is running");
+
+await app.RunAsync();
