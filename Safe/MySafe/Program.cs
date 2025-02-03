@@ -19,7 +19,10 @@ builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfigurati
     .WriteTo.Console());
 
 builder.Services.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();
-builder.Services.AddSingleton<ISafe, MySafe>();
+builder.Services.AddControllers();
+
+// rethink this for interacting with a safe research the different types of scopes 
+// builder.Services.AddSingleton<ISafe, Safe.MySafe>();
 
 // enable cross-origin requests only from localhost:4200 
 builder.Services.AddCors(options =>
@@ -33,9 +36,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseRouting();
+app.MapControllers();
 app.UseCors(myAllowSpecificOrigins);
-
-app.MapGet("/", () => Results.Ok(SafeResponse.Ok("Safe API is successfully running")));
 
 app.Run();
