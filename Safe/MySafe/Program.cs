@@ -3,6 +3,7 @@ using Serilog;
 
 
 var builder = WebApplication.CreateBuilder(args);
+const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 // two-step initialization 
 // first step
@@ -20,11 +21,21 @@ builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfigurati
 builder.Services.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();
 builder.Services.AddSingleton<ISafe, MySafe>();
 
-// Todo: not sure what we are going to do wiwth this now. move the service to an endpoint
-// builder.Services.AddHostedService<SafeHostedService>();
+// enable cross-origin requests only from localhost:4200 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: myAllowSpecificOrigins, policy =>
+    {
+        string temp = builder.Configuration.GetValue<string>("CORS:ContainerHost") ?? string.Empty;
+        policy.WithOrigins(temp);
+    });
+});
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Safe API is running");
+app.UseRouting();
+app.UseCors(myAllowSpecificOrigins);
 
-await app.RunAsync();
+app.MapGet("/", () => Results.Ok(SafeResponse.Ok("Safe API is successfully running")));
+
+app.Run();
