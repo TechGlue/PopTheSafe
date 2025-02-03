@@ -1,1 +1,6 @@
-<p>safe-status works!</p>
+<div>
+  @if (safeStatus$ | async; as safeStatus) {
+    <p>isDetail: {{ safeStatus.isDetail }}</p>
+    <p>isSuccessful: {{ safeStatus.isSuccessful }}</p>
+  }
+</div>

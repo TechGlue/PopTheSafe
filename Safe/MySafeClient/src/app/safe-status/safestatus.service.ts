@@ -1,7 +1,8 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { catchError, throwError } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
+import { SafeResponse } from './safe-response';
 
 @Injectable({
   providedIn: 'root',
@@ -11,18 +12,23 @@ export class SafestatusService {
 
   private apiUrl: string = environment.safestatusurl;
 
-  getSafeStatus(): void {
+  getSafeStatus(): Observable<SafeResponse> {
     const errorResponse = new HttpErrorResponse({
       status: 404,
       statusText: 'Not Found',
       error: {
-        message: 'unable to connect to safe service, check connection string',
+        message: 'Unable to connect to openweathermap, check connection string',
       },
     });
 
-    this.http.get(this.apiUrl, { observe: 'response' }).subscribe((res) => {
-      console.log('Response status:', res.status);
-      console.log('Body:', res.body);
-    });
+    // handle error
+    return this.http.get<SafeResponse>(this.apiUrl).pipe(
+      catchError((error) => {
+        if (this.apiUrl == '') {
+          return throwError(() => errorResponse);
+        }
+        return throwError(() => error);
+      }),
+    );
   }
 }
