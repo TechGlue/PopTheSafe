@@ -1,5 +1,6 @@
-﻿using Safe;
-using Serilog;
+﻿using Serilog;
+using MySafe.AdminCodeGenerator;
+using MySafe.SafeHelper;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,10 +20,10 @@ builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfigurati
     .WriteTo.Console());
 
 builder.Services.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();
+builder.Services.AddSingleton<ISafe, Safe>();
 builder.Services.AddControllers();
 
 // rethink this for interacting with a safe research the different types of scopes 
-// builder.Services.AddSingleton<ISafe, Safe.MySafe>();
 
 // enable cross-origin requests only from localhost:4200 
 builder.Services.AddCors(options =>

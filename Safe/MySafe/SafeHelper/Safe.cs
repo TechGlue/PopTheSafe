@@ -1,8 +1,9 @@
+using MySafe.AdminCodeGenerator;
 using Stateless;
 
-namespace Safe;
+namespace MySafe.SafeHelper;
 
-public class MySafe : ISafe
+public class Safe : ISafe
 {
     // SafeStateMachine fields
     private readonly StateMachine<SafeStates.State, SafeStates.Triggers> _safeStateMachine;
@@ -16,7 +17,7 @@ public class MySafe : ISafe
 
     private string _adminPassword = String.Empty;
 
-    public MySafe(IAdminCodeGenerator adminCodeGenerator)
+    public Safe(IAdminCodeGenerator adminCodeGenerator)
     {
         // SafeStateMachine initialization
         _safeStateMachine =

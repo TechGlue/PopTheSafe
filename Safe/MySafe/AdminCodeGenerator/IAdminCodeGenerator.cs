@@ -1,4 +1,4 @@
-namespace Safe;
+namespace MySafe.AdminCodeGenerator;
 
 public interface IAdminCodeGenerator
 {

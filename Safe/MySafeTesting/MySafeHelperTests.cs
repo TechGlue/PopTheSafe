@@ -1,4 +1,5 @@
-using Safe;
+using MySafe.AdminCodeGenerator;
+using MySafe.SafeHelper;
 using Xunit.Abstractions;
 
 namespace SafeTesting;
@@ -21,7 +22,7 @@ public class MySafeHelperTests
     public void VerifyFourDigits_GivenInvalidFourDigitCode_ReturnsFalse(string digits)
     {
         // Arrange
-        MySafe testSafe = new MySafe(_adminCodeGenerator);
+        Safe testSafe = new Safe(_adminCodeGenerator);
 
         // Act 
         bool output = testSafe.VerifyFourDigitCode(digits);
@@ -38,7 +39,7 @@ public class MySafeHelperTests
     public void VerifyFourDigits_GivenValidFourDigitCode_ReturnsTrue(string digits)
     {
         // Arrange
-        MySafe testSafe = new MySafe(_adminCodeGenerator);
+        Safe testSafe = new Safe(_adminCodeGenerator);
 
         // Act 
         bool output = testSafe.VerifyFourDigitCode(digits);

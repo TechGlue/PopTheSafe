@@ -1,4 +1,4 @@
-namespace Safe;
+namespace MySafe.SafeHelper;
 
 public class SafeStates
 {
