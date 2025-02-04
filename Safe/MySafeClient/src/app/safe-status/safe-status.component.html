@@ -1,6 +1,5 @@
 <div class="text-xl">
   @if (safeStatus$ | async; as safeStatus) {
-    <p>LastFetchedStatus: {{ safeStatus.isDetail }}</p>
-    <p>WasSuccessful: {{ safeStatus.isSuccessful }}</p>
+    <p>SafeState: {{ safeStatus.isDetail }}</p>
   }
 </div>

@@ -1,7 +1,9 @@
 ﻿using Serilog;
 using MySafe.AdminCodeGenerator;
+using MySafe.ErrorHandling;
 using MySafe.SafeHelper;
 
+// note: exception handlers are by default only enabled in production
 
 var builder = WebApplication.CreateBuilder(args);
 const string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -19,11 +21,12 @@ builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfigurati
     .Enrich.FromLogContext()
     .WriteTo.Console());
 
+// Re-enable later for logging of exceptions
 builder.Services.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();
-builder.Services.AddSingleton<ISafe, Safe>();
+builder.Services.AddTransient<ISafe, Safe>();
 builder.Services.AddControllers();
-
-// rethink this for interacting with a safe research the different types of scopes 
+builder.Services.AddExceptionHandler<SafeErrorHandling>();
+builder.Services.AddProblemDetails();
 
 // enable cross-origin requests only from localhost:4200 
 builder.Services.AddCors(options =>
@@ -39,5 +42,6 @@ var app = builder.Build();
 
 app.MapControllers();
 app.UseCors(myAllowSpecificOrigins);
+app.UseExceptionHandler();
 
 app.Run();

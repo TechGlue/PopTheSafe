@@ -10,7 +10,7 @@ import { SafeResponse } from './safe-response';
 export class SafestatusService {
   constructor(private http: HttpClient) {}
 
-  private apiUrl: string = environment.safestatusurl + '/safe/';
+  private apiUrl: string = environment.safestatusurl + '/safe/status/';
 
   getSafeStatus(): Observable<SafeResponse> {
     const errorResponse = new HttpErrorResponse({
