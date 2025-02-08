@@ -1,4 +1,10 @@
 <div class="">
+  <div class="text-xl font-bold">
+    @if (safeStatus$ | async; as safeStatus) {
+      <p>SafeState: {{ safeStatus.isDetail }}</p>
+    }
+  </div>
+
   @if (digitsInput == "") {
     <p class="mt-4 text-xl font-bold">Entered SafeCode: awaiting user input</p>
   } @else {
@@ -27,6 +33,12 @@
       class="rounded bg-green-500 hover:bg-green-400 p-4"
     >
       Close
+    </button>
+    <button
+      (click)="safeLock()"
+      class="rounded bg-black text-white hover:bg-sky-400 p-4"
+    >
+      Lock
     </button>
     <button
       (click)="submitSafePin(digitsInput)"

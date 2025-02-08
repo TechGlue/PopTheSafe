@@ -16,8 +16,11 @@ export class KeypadSubmitService {
   }
 
   closeSafe(): Observable<SafeResponse> {
-    console.log('making open safe rest call');
     return this.http.get<SafeResponse>(`${this.baseUrl}close/`);
+  }
+
+  lockSafe(): Observable<SafeResponse> {
+    return this.http.get<SafeResponse>(`${this.baseUrl}lock/`);
   }
 
   submitSafePin(pin: string): Observable<SafeResponse> {
@@ -26,7 +29,6 @@ export class KeypadSubmitService {
   }
 
   resetSafePin(): Observable<SafeResponse> {
-    console.log('making open safe rest call');
     return this.http.get<SafeResponse>(`${this.baseUrl}reset/`);
   }
 }

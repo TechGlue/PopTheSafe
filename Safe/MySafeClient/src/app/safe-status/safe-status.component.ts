@@ -10,14 +10,4 @@ import { Observable } from 'rxjs';
   selector: 'app-safe-status',
   templateUrl: './safe-status.component.html',
 })
-export class SafeStatusComponent {
-  @Input() safeStatus!: string;
-
-  safeStatus$!: Observable<SafeResponse>;
-
-  constructor(private safeStatusService: SafestatusService) {}
-
-  ngOnInit(): void {
-    this.safeStatus$ = this.safeStatusService.getSafeStatus();
-  }
-}
+export class SafeStatusComponent {}
