@@ -8,14 +8,6 @@ public class SafeController : BaseController
     private readonly ILogger<SafeController> _logger;
     private readonly ISafe _mySafe;
 
-    /*
-     * Todo:
-     * Rest calls to create
-     * Submit (takes in a code parameter) - have submit take in parameters instead of a path like that. 
-     * Reset (takes in no parameter it's all back end)
-     * Unlock (takes in no parameter it's all back end)
-     */
-
     public SafeController(ILogger<SafeController> logger, ISafe controllerSafe)
     {
         _logger = logger;
@@ -39,13 +31,37 @@ public class SafeController : BaseController
 
     [HttpPut("{safePin}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public IActionResult Submit(string safepin)
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult Submit(string safePin)
     {
-        return Ok(safepin);
+        SafeResponse safeResponse = new SafeResponse();
+
+        _mySafe.SetCode(safePin, result => safeResponse = result);
+        
+        return Ok(safeResponse);
     }
     
-    [HttpGet("Throw")]
-    public IActionResult Throw() =>
-        throw new ArgumentException("THIS IS A BIG BAD EXCEPTION");
+    [HttpGet("reset")]
+    [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
+    public IActionResult Reset()
+    {
+        _mySafe.PressReset();
+        return Ok(SafeResponse.Ok(_mySafe.Describe()));
+    }
+    
+    [HttpGet("open")]
+    [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
+    public IActionResult Open()
+    {
+        _mySafe.Open();
+        return Ok(SafeResponse.Ok(_mySafe.Describe()));
+    }
+    
+    [HttpGet("close")]
+    [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
+    public IActionResult Close()
+    {
+        _mySafe.Close();
+        return Ok(SafeResponse.Ok(_mySafe.Describe()));
+    }
 }

@@ -1,6 +1,6 @@
 import { Component, Input, input, OnInit } from '@angular/core';
 import { SafestatusService } from './safestatus.service';
-import { SafeResponse } from './safe-response';
+import { SafeResponse } from '../safe-response';
 import { AsyncPipe } from '@angular/common';
 import { Observable } from 'rxjs';
 
@@ -12,12 +12,12 @@ import { Observable } from 'rxjs';
 })
 export class SafeStatusComponent {
   @Input() safeStatus!: string;
+
   safeStatus$!: Observable<SafeResponse>;
 
   constructor(private safeStatusService: SafestatusService) {}
 
   ngOnInit(): void {
     this.safeStatus$ = this.safeStatusService.getSafeStatus();
-    console.log('Safe Status: ' + this.safeStatus$);
   }
 }
