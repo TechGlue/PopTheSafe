@@ -18,7 +18,6 @@ public class SafeController : BaseController
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
     public IActionResult Safe()
     {
-        _logger.LogInformation("Safe controller successful");
         return Ok(SafeResponse.Ok("Safe API/Controllers successful"));
     }
 
