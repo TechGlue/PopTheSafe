@@ -34,20 +34,7 @@ public class SafeController : BaseController
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public IActionResult Submit(string safePin)
     {
-        _logger.LogWarning("This is the giving pin {safePin}", safePin);
-        SafeResponse safeResponse = new SafeResponse();
-
-        if (safePin.Length == 0)
-        {
-
-            return BadRequest(new SafeResponse
-            {
-                IsDetail = "safe pin is empty or null. check safe input", 
-                IsSuccessful = false
-            });
-        }
-        
-        _mySafe.SetCode(safePin, result => safeResponse = result);
+        _mySafe.SetCode(safePin, result => _ = result);
         
         return Ok(SafeResponse.Ok(_mySafe.Describe()));
     }

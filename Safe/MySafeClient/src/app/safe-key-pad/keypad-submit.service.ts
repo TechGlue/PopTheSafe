@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
-import { SafeResponse } from '../safe-response';
+import { catchError, Observable, throwError } from 'rxjs';
+import { ISafeResponse } from '../safe-response';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -11,24 +11,24 @@ export class KeypadSubmitService {
   constructor(private http: HttpClient) {}
   private baseUrl: string = environment.safestatusurl + '/safe/';
 
-  openSafe(): Observable<SafeResponse> {
-    return this.http.get<SafeResponse>(`${this.baseUrl}open/`);
+  openSafe(): Observable<ISafeResponse> {
+    return this.http.get<ISafeResponse>(`${this.baseUrl}open/`);
   }
 
-  closeSafe(): Observable<SafeResponse> {
-    return this.http.get<SafeResponse>(`${this.baseUrl}close/`);
+  closeSafe(): Observable<ISafeResponse> {
+    return this.http.get<ISafeResponse>(`${this.baseUrl}close/`);
   }
 
-  lockSafe(): Observable<SafeResponse> {
-    return this.http.get<SafeResponse>(`${this.baseUrl}lock/`);
+  lockSafe(): Observable<ISafeResponse> {
+    return this.http.get<ISafeResponse>(`${this.baseUrl}lock/`);
   }
 
-  submitSafePin(pin: string): Observable<SafeResponse> {
+  submitSafePin(pin: string): Observable<ISafeResponse> {
     const body = { title: 'something' };
-    return this.http.put<SafeResponse>(`${this.baseUrl}${pin}`, body);
+    return this.http.put<ISafeResponse>(`${this.baseUrl}${pin}`, body);
   }
 
-  resetSafePin(): Observable<SafeResponse> {
-    return this.http.get<SafeResponse>(`${this.baseUrl}reset/`);
+  resetSafePin(): Observable<ISafeResponse> {
+    return this.http.get<ISafeResponse>(`${this.baseUrl}reset/`);
   }
 }

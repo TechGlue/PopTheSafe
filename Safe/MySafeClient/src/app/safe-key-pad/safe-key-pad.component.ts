@@ -1,9 +1,9 @@
 import { Component, Input, input, OnInit } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
 import { KeypadSubmitService } from './keypad-submit.service';
 import { SafestatusService } from '../safe-status/safestatus.service';
-import { Observable } from 'rxjs';
-import { SafeResponse } from '../safe-response';
+import { catchError, Observable, throwError } from 'rxjs';
+import { ISafeResponse } from '../safe-response';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   imports: [AsyncPipe],
@@ -17,9 +17,14 @@ export class SafeKeyPadComponent {
     private safeStatusService: SafestatusService,
   ) {}
 
+  failingResponse: ISafeResponse = {
+    isSuccessful: false,
+    isDetail: 'Verify safe input',
+  };
+
   @Input() safeStatus!: string;
 
-  safeStatus$!: Observable<SafeResponse>;
+  safeStatus$!: Observable<ISafeResponse>;
 
   digits: Number[] = [0, 1, 2, 3, 4, 5, 6, 7, 9];
   digitsInput: string = '';
@@ -51,8 +56,16 @@ export class SafeKeyPadComponent {
   }
 
   submitSafePin(pin: string): void {
+    if (pin === null || pin.length == 0) {
+      return;
+    }
+
     // todo: need to work on the submit pin
-    this.safeStatus$ = this.submitService.submitSafePin(pin);
+    this.safeStatus$ = this.submitService.submitSafePin(pin).pipe(
+      catchError(() => {
+        return throwError(() => this.failingResponse);
+      }),
+    );
 
     this.digitsInput = '';
   }

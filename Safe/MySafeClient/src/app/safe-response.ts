@@ -1,4 +1,4 @@
-export interface SafeResponse {
+export interface ISafeResponse {
   isSuccessful: boolean;
   isDetail: string;
 }
