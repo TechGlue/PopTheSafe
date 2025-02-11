@@ -21,3 +21,5 @@ cd safe
 docker-compose build
 docker-compose up -d
 ```
+
+Once containers are done building navigate to http://localhost:4200/
