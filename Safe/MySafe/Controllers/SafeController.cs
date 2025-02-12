@@ -1,17 +1,27 @@
 using Microsoft.AspNetCore.Mvc;
+using MySafe.AdminCodeGenerator;
 using MySafe.SafeHelper;
 
 namespace MySafe.Controllers;
 
+/*
+ * Todo: Have a request go out. If the id is present nice then fetch it and use it. Else create a new one and inject it into the dictionary.
+ *
+ * Todo: First figure out the fetching with id based on safes in the dummy data. Then work on the safe creation.
+ *
+ * Note: controllers are instantiated at request so the contructor will not live out at the same state of the current controller. Each call we reinstanciate the object again
+ */
+
 public class SafeController : BaseController
 {
     private readonly ILogger<SafeController> _logger;
-    private readonly ISafe _mySafe;
+    private readonly SafeCache _safeCache;
 
-    public SafeController(ILogger<SafeController> logger, ISafe controllerSafe)
+    public SafeController(IAdminCodeGenerator adminCodeGenerator, ILogger<SafeController> logger, SafeCache safeCache)
     {
+        _safeCache = safeCache;
         _logger = logger;
-        _mySafe = controllerSafe;
+        
     }
 
     [HttpGet]
@@ -21,52 +31,53 @@ public class SafeController : BaseController
         return Ok(SafeResponse.Ok("Safe API/Controllers successful"));
     }
 
-    [HttpGet("status")]
+    [HttpGet("status/{id}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
-    public IActionResult FetchSafeStatus()
+    [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
+    public IActionResult FetchSafeStatus(int id)
     {
-        return Ok(SafeResponse.Ok(_mySafe.Describe()));
+        if (!_safeCache.ContainsSafe(id))
+        {
+            throw new ArgumentException("id not found");
+        }
+        
+        return Ok(_safeCache.FetchSafe(id).Describe());
     }
 
-    [HttpPut("{safePin}")]
+    [HttpPut("{safeId}/{safePin}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
-    public IActionResult Submit(string safePin)
+    public IActionResult Submit(int safeId, string safePin)
     {
-        _mySafe.SetCode(safePin, result => _ = result);
         
-        return Ok(SafeResponse.Ok(_mySafe.Describe()));
+        return Ok();
     }
     
-    [HttpGet("reset")]
+    [HttpGet("reset/{safeId}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
-    public IActionResult Reset()
+    public IActionResult Reset(int safeId)
     {
-        _mySafe.PressReset();
-        return Ok(SafeResponse.Ok(_mySafe.Describe()));
+        return Ok();
     }
     
-    [HttpGet("open")]
+    [HttpGet("open/{safeId}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
     public IActionResult Open()
     {
-        _mySafe.Open();
-        return Ok(SafeResponse.Ok(_mySafe.Describe()));
+        return Ok();
     }
     
-    [HttpGet("close")]
+    [HttpGet("close/{safeId}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
     public IActionResult Close()
     {
-        _mySafe.Close();
-        return Ok(SafeResponse.Ok(_mySafe.Describe()));
+        return Ok();
     }
     
-    [HttpGet("lock")]
+    [HttpGet("lock/{safeId}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
     public IActionResult Lock()
     {
-        _mySafe.PressLock();
-        return Ok(SafeResponse.Ok(_mySafe.Describe()));
+        return Ok();
     }
 }
