@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using MySafe.AdminCodeGenerator;
 using MySafe.SafeHelper;
@@ -17,6 +18,7 @@ public class SafeController : BaseController
 
     [HttpGet]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult Safe()
     {
         return Ok(SafeResponse.Ok("Safe API/Controllers successful"));
@@ -24,14 +26,9 @@ public class SafeController : BaseController
 
     [HttpGet("status/{id}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult FetchSafeStatus(int id)
     {
-        if (!_safeCache.ContainsSafe(id))
-        {
-            throw new ArgumentException("id not found");
-        }
-        
         return Ok(_safeCache.FetchSafe(id).Describe());
     }
 
@@ -43,35 +40,55 @@ public class SafeController : BaseController
         ISafe safe = _safeCache.FetchSafe(safeId);
 
         safe.SetCode(safePin, result => _ = result);
-        
+
         return Ok(safe.Describe());
     }
-    
+
     [HttpGet("reset/{safeId}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public IActionResult Reset(int safeId)
     {
-        return Ok();
+        ISafe safe = _safeCache.FetchSafe(safeId);
+
+        safe.PressReset();
+
+        return Ok(safe.Describe());
     }
-    
+
     [HttpGet("open/{safeId}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
-    public IActionResult Open()
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult Open(int safeId)
     {
-        return Ok();
+        ISafe safe = _safeCache.FetchSafe(safeId);
+
+        safe.Open();
+
+        return Ok(safe.Describe());
     }
-    
+
     [HttpGet("close/{safeId}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
-    public IActionResult Close()
+    [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult Close(int safeId)
     {
-        return Ok();
+        ISafe safe = _safeCache.FetchSafe(safeId);
+
+        safe.Close();
+
+        return Ok(safe.Describe());
     }
-    
+
     [HttpGet("lock/{safeId}")]
     [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
-    public IActionResult Lock()
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult Lock(int safeId)
     {
-        return Ok();
+        ISafe safe = _safeCache.FetchSafe(safeId);
+
+        safe.PressLock();
+
+        return Ok(safe.Describe());
     }
 }
