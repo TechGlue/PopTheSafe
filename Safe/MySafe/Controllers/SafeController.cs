@@ -4,14 +4,6 @@ using MySafe.SafeHelper;
 
 namespace MySafe.Controllers;
 
-/*
- * Todo: Have a request go out. If the id is present nice then fetch it and use it. Else create a new one and inject it into the dictionary.
- *
- * Todo: First figure out the fetching with id based on safes in the dummy data. Then work on the safe creation.
- *
- * Note: controllers are instantiated at request so the contructor will not live out at the same state of the current controller. Each call we reinstanciate the object again
- */
-
 public class SafeController : BaseController
 {
     private readonly ILogger<SafeController> _logger;
@@ -21,7 +13,6 @@ public class SafeController : BaseController
     {
         _safeCache = safeCache;
         _logger = logger;
-        
     }
 
     [HttpGet]
@@ -49,8 +40,11 @@ public class SafeController : BaseController
     [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
     public IActionResult Submit(int safeId, string safePin)
     {
+        ISafe safe = _safeCache.FetchSafe(safeId);
+
+        safe.SetCode(safePin, result => _ = result);
         
-        return Ok();
+        return Ok(safe.Describe());
     }
     
     [HttpGet("reset/{safeId}")]
