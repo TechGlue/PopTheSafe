@@ -29,7 +29,7 @@ public class SafeController : BaseController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult FetchSafeStatus(int id)
     {
-        return Ok(_safeCache.FetchSafe(id).Describe());
+        return Ok(SafeResponse.Ok(_safeCache.FetchSafe(id).Describe()));
     }
 
     [HttpPut("{safeId}/{safePin}")]
@@ -41,7 +41,7 @@ public class SafeController : BaseController
 
         safe.SetCode(safePin, result => _ = result);
 
-        return Ok(safe.Describe());
+        return Ok(SafeResponse.Ok(safe.Describe()));
     }
 
     [HttpGet("reset/{safeId}")]
@@ -53,7 +53,7 @@ public class SafeController : BaseController
 
         safe.PressReset();
 
-        return Ok(safe.Describe());
+        return Ok(SafeResponse.Ok(safe.Describe()));
     }
 
     [HttpGet("open/{safeId}")]
@@ -65,7 +65,7 @@ public class SafeController : BaseController
 
         safe.Open();
 
-        return Ok(safe.Describe());
+        return Ok(SafeResponse.Ok(safe.Describe()));
     }
 
     [HttpGet("close/{safeId}")]
@@ -77,7 +77,7 @@ public class SafeController : BaseController
 
         safe.Close();
 
-        return Ok(safe.Describe());
+        return Ok(SafeResponse.Ok(safe.Describe()));
     }
 
     [HttpGet("lock/{safeId}")]
@@ -89,6 +89,6 @@ public class SafeController : BaseController
 
         safe.PressLock();
 
-        return Ok(safe.Describe());
+        return Ok(SafeResponse.Ok(safe.Describe()));
     }
 }

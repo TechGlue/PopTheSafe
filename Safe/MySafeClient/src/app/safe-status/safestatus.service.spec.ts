@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { SafestatusService } from './safestatus.service';
+import { SafeStatusService } from './safe-status.service';
 
 describe('SafestatusService', () => {
-  let service: SafestatusService;
+  let service: SafeStatusService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(SafestatusService);
+    service = TestBed.inject(SafeStatusService);
   });
 
   it('should be created', () => {

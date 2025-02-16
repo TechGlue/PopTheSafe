@@ -1,62 +1,67 @@
-<div class="">
+<div>
   <div class="text-xl font-bold">
-    @if (safeStatus$ | async; as safeStatus) {
-      <p>SafeState: {{ safeStatus.isDetail }}</p>
+    @if (safe$ | async; as safeResponse) {
+      <p>Current Safe Status: {{ safeResponse.isDetail }}</p>
     }
   </div>
 
-  @if (digitsInput == "") {
-    <p class="mt-4 text-xl font-bold">Entered SafeCode: awaiting user input</p>
-  } @else {
-    <p class="mt-4 text-xl font-bold">Entered SafeCode: {{ digitsInput }}</p>
-  }
 
-  <div class="flex flex-row gap-2">
-    @for (item of digits; track item) {
+  <div class="text-xl font-bold">
+    @if (digitsInput == "") {
+      <p class="">Entered SafeCode: awaiting user input</p>
+    } @else {
+      <p class="">Entered SafeCode: {{ digitsInput }}</p>
+    }
+  </div>
+
+  <div class="mt-4">
+    <div class="flex flex-row gap-2">
+      @for (item of digits; track item) {
+        <button
+          (click)="concatNumberToInput(item.toString())"
+          class="rounded bg-indigo-500 hover:bg-fuchsia-500 p-4"
+        >
+          {{ item }}
+        </button>
+      }
+    </div>
+    <div class="mt-4 text-xl font-bold flex flex-row gap-2">
       <button
-        (click)="concatNumberToInput(item.toString())"
-        class="rounded bg-indigo-500 hover:bg-fuchsia-500 p-4"
+        (click)="safeOpen()"
+        class="rounded bg-amber-500 hover:bg-amber-400 p-4"
       >
-        {{ item }}
+        Open
       </button>
-    }
-  </div>
-  <div class="mt-4 text-xl font-bold flex flex-row gap-2">
-    <button
-      (click)="safeOpen()"
-      class="rounded bg-amber-500 hover:bg-amber-400 p-4"
-    >
-      Open
-    </button>
-    <button
-      (click)="safeClose()"
-      class="rounded bg-green-500 hover:bg-green-400 p-4"
-    >
-      Close
-    </button>
-    <button
-      (click)="safeLock()"
-      class="rounded bg-black text-white hover:bg-sky-400 p-4"
-    >
-      Lock
-    </button>
-    <button
-      (click)="submitSafePin(digitsInput)"
-      class="rounded bg-sky-500 hover:bg-sky-400 p-4"
-    >
-      Submit
-    </button>
-    <button
-      (click)="clearInput()"
-      class="rounded bg-red-500 hover:bg-red-400 p-4"
-    >
-      Clear
-    </button>
-    <button
-      (click)="resetSafePin()"
-      class="rounded bg-fuchsia-500 hover:bg-fuchsia-400 p-4"
-    >
-      Reset
-    </button>
+      <button
+        (click)="safeClose()"
+        class="rounded bg-green-500 hover:bg-green-400 p-4"
+      >
+        Close
+      </button>
+      <button
+        (click)="safeLock()"
+        class="rounded bg-black text-white hover:bg-sky-400 p-4"
+      >
+        Lock
+      </button>
+      <button
+        (click)="submitSafePin(digitsInput)"
+        class="rounded bg-sky-500 hover:bg-sky-400 p-4"
+      >
+        Submit
+      </button>
+      <button
+        (click)="clearInput()"
+        class="rounded bg-red-500 hover:bg-red-400 p-4"
+      >
+        Clear
+      </button>
+      <button
+        (click)="resetSafePin()"
+        class="rounded bg-fuchsia-500 hover:bg-fuchsia-400 p-4"
+      >
+        Reset
+      </button>
+    </div>
   </div>
 </div>
