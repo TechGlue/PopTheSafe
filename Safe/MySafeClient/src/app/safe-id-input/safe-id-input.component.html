@@ -1,0 +1,9 @@
+<form [formGroup]="safeForm" (ngSubmit)="onSubmit()">
+  <label for="safeIdControl">Name: </label>
+  <input id="safeIdControl" class=" border-2 border-black" type="text" formControlName="safeIdControl"
+         placeholder="Ex. 1, 2, 3, 44 (single-digit number)">
+  <button type="Submit" [disabled]="!safeForm.valid">SubmitId</button>
+</form>
+
+<p>Form value: {{ safeForm.value.safeIdControl }}</p>
+

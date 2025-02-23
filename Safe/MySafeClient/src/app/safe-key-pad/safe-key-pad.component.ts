@@ -1,7 +1,7 @@
-import {Component, Input, input, OnInit} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {KeypadSubmitService} from './keypad-submit.service';
 import {SafeStatusService} from '../safe-status/safe-status.service';
-import {catchError, Observable, throwError} from 'rxjs';
+import {Observable} from 'rxjs';
 import {ISafeResponse} from '../safe-response';
 import {AsyncPipe} from '@angular/common';
 import {ReactiveFormsModule} from '@angular/forms';
@@ -20,19 +20,18 @@ export class SafeKeyPadComponent {
   ) {
   }
 
-  failingResponse: ISafeResponse = {
-    isSuccessful: false,
-    isDetail: 'Verify safe input',
-  };
-
   digits: Number[] = [0, 1, 2, 3, 4, 5, 6, 7, 9];
   digitsInput: string = '';
 
+  // the ! is the non-null assertion operator.
+  // it let's TS know that the value will not be null or undefined.
+  @Input() safeId!: string;
   safe$!: Observable<ISafeResponse>;
 
   // On-reload of page. Given an id is present will fetch the safe-id
   ngOnInit(): void {
     this.safe$ = this.safeStatusService.getSafeStatus(1);
+    console.log('safeId: ' + this.safeId);
   }
 
   clearInput(): void {
@@ -56,11 +55,7 @@ export class SafeKeyPadComponent {
       return;
     }
 
-    this.submitService.submitSafePin(pin).pipe(
-      catchError(() => {
-        return throwError(() => this.failingResponse);
-      }),
-    );
+    this.submitService.submitSafePin(pin);
 
     this.digitsInput = '';
   }
