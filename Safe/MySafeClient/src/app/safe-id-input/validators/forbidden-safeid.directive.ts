@@ -5,10 +5,6 @@ import {AbstractControl, NG_VALIDATORS, ValidationErrors, Validator, ValidatorFn
 export function forbiddenNameValidator(safeIdRe: RegExp): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const forbiddenId = safeIdRe.test(control.value);
-    console.log('forbiddenId', forbiddenId);
-
-
-    // if false return null, true return the value input
     return forbiddenId ? null : {forbiddenId: {value: control.value}};
   };
 }
@@ -22,7 +18,7 @@ export class ForbiddenSafeidDirective implements Validator {
   @Input('appForbiddenSafeId') forbiddenSafeId = '';
 
   validate(control: AbstractControl): ValidationErrors | null {
-    return this.forbiddenSafeId ? forbiddenNameValidator(new RegExp(this.forbiddenSafeId, 'i'))(control)
+    return this.forbiddenSafeId ? forbiddenNameValidator(new RegExp(this.forbiddenSafeId))(control)
       : null;
   }
 }
