@@ -1,10 +1,10 @@
-import {Component, Input} from '@angular/core';
-import {KeypadSubmitService} from './keypad-submit.service';
-import {SafeStatusService} from '../safe-status/safe-status.service';
-import {Observable} from 'rxjs';
-import {ISafeResponse} from '../safe-response';
-import {AsyncPipe} from '@angular/common';
-import {ReactiveFormsModule} from '@angular/forms';
+import { Component, Input } from '@angular/core';
+import { KeypadSubmitService } from './keypad-submit.service';
+import { SafeStatusService } from '../safe-status/safe-status.service';
+import { Observable } from 'rxjs';
+import { ISafeResponse } from '../safe-response';
+import { AsyncPipe } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   imports: [AsyncPipe, ReactiveFormsModule],
@@ -12,13 +12,11 @@ import {ReactiveFormsModule} from '@angular/forms';
   selector: 'app-safe-key-pad',
   templateUrl: './safe-key-pad.component.html',
 })
-
 export class SafeKeyPadComponent {
   constructor(
     private submitService: KeypadSubmitService,
     private safeStatusService: SafeStatusService,
-  ) {
-  }
+  ) {}
 
   digits: Number[] = [0, 1, 2, 3, 4, 5, 6, 7, 9];
   digitsInput: string = '';
@@ -28,9 +26,9 @@ export class SafeKeyPadComponent {
   @Input() safeId!: string;
   safe$!: Observable<ISafeResponse>;
 
-  // On-reload of page. Given an id is present will fetch the safe-id
   ngOnInit(): void {
-    this.safe$ = this.safeStatusService.getSafeStatus(1);
+    let val = Number(this.safeId)
+    this.safe$ = this.safeStatusService.getSafeStatus(val);
     console.log('safeId: ' + this.safeId);
   }
 
@@ -38,17 +36,13 @@ export class SafeKeyPadComponent {
     this.digitsInput = '';
   }
 
-  safeClose(): void {
-  }
+  safeClose(): void {}
 
-  safeOpen(): void {
-  }
+  safeOpen(): void {}
 
-  safeLock(): void {
-  }
+  safeLock(): void {}
 
-  resetSafePin(): void {
-  }
+  resetSafePin(): void {}
 
   submitSafePin(pin: string): void {
     if (pin === null || pin.length == 0) {

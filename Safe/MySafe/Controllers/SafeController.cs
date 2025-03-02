@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using MySafe.AdminCodeGenerator;
 using MySafe.SafeHelper;
@@ -6,10 +5,10 @@ using MySafe.SafeHelper;
 namespace MySafe.Controllers;
 
 /* Add following end points
- * Have an intro where you ask for a safe id, you enter or if safe id comes back invalid then you 
+ * Have an intro where you ask for a safe id
+ * You enter or if safe id comes back invalid then you 
  * Create a safe
  * if it's not there 
- * 
  */
 
 public class SafeController : BaseController

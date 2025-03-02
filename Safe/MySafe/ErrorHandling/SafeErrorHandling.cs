@@ -29,7 +29,7 @@ public class SafeErrorHandling : IExceptionHandler
 
         var problemDetails = new ProblemDetails
         {
-            Status = StatusCodes.Status422UnprocessableEntity,
+            Status = StatusCodes.Status400BadRequest,
             Title = $"Server error - {exceptionType}",
             Detail = exceptionMessage
         };
