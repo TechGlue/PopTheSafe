@@ -1,7 +1,7 @@
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Injectable} from '@angular/core';
 import {environment} from '../../environments/environment';
-import { Observable} from 'rxjs';
+import {catchError, EMPTY, Observable, throwError} from 'rxjs';
 import {ISafeResponse} from '../safe-response';
 
 @Injectable({
@@ -14,7 +14,10 @@ export class SafeStatusService {
 
   private apiUrl: string = environment.safestatusurl + '/safe/status/';
 
-  getSafeStatus(id: number): Observable<ISafeResponse> {
-    return this.http.get<ISafeResponse>(`${this.apiUrl}${id}`);
+  getSafeStatus(id: string): Observable<ISafeResponse> {
+    return this.http.get<ISafeResponse>(`${this.apiUrl}${id}`)
+      .pipe(
+        catchError(error => EMPTY)
+      );
   }
 }

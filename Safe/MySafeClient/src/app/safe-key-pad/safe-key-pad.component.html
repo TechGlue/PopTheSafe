@@ -1,6 +1,6 @@
 <div>
   <div class="text-xl font-bold">
-    @if (safe$ | async; as safeResponse) {
+    @if (safeResponse != null) {
       <p>Current Safe Status: {{ safeResponse.isDetail }}</p>
     }
   </div>

@@ -4,13 +4,6 @@ using MySafe.SafeHelper;
 
 namespace MySafe.Controllers;
 
-/* Add following end points
- * Have an intro where you ask for a safe id
- * You enter or if safe id comes back invalid then you 
- * Create a safe
- * if it's not there 
- */
-
 public class SafeController : BaseController
 {
     private readonly ILogger<SafeController> _logger;
