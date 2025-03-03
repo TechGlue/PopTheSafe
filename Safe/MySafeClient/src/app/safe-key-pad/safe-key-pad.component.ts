@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {KeypadSubmitService} from './keypad-submit.service';
 import {SafeStatusService} from '../safe-status/safe-status.service';
-import {catchError, EMPTY, Observable} from 'rxjs';
+import {catchError, EMPTY} from 'rxjs';
 import {ISafeResponse} from '../safe-response';
 import {ReactiveFormsModule} from '@angular/forms';
 
@@ -37,20 +37,53 @@ export class SafeKeyPadComponent {
       );
   }
 
-  clearInput(): void {
-    this.digitsInput = '';
-  }
 
   safeClose(): void {
+    this.submitService.closeSafe(this.safeId)
+      .pipe(
+        catchError(error => EMPTY)
+      )
+      .subscribe(
+        (data: ISafeResponse) => {
+          this.safeResponse = data;
+        }
+      );
   }
 
   safeOpen(): void {
+    this.submitService.openSafe(this.safeId)
+      .pipe(
+        catchError(error => EMPTY)
+      )
+      .subscribe(
+        (data: ISafeResponse) => {
+          this.safeResponse = data;
+        }
+      );
   }
 
   safeLock(): void {
+    this.submitService.lockSafe(this.safeId)
+      .pipe(
+        catchError(error => EMPTY)
+      )
+      .subscribe(
+        (data: ISafeResponse) => {
+          this.safeResponse = data;
+        }
+      );
   }
 
   resetSafePin(): void {
+    this.submitService.resetSafePin(this.safeId)
+      .pipe(
+        catchError(error => EMPTY)
+      )
+      .subscribe(
+        (data: ISafeResponse) => {
+          this.safeResponse = data;
+        }
+      );
   }
 
   submitSafePin(pin: string): void {
@@ -58,7 +91,15 @@ export class SafeKeyPadComponent {
       return;
     }
 
-    this.submitService.submitSafePin(pin);
+    this.submitService.submitSafePin(this.safeId, pin)
+      .pipe(
+        catchError(error => EMPTY)
+      )
+      .subscribe(
+        (data: ISafeResponse) => {
+          this.safeResponse = data;
+        }
+      );
 
     this.digitsInput = '';
   }
@@ -67,5 +108,9 @@ export class SafeKeyPadComponent {
     if (this.digitsInput.length <= 3) {
       this.digitsInput = this.digitsInput.concat(num);
     }
+  }
+
+  clearInput(): void {
+    this.digitsInput = '';
   }
 }

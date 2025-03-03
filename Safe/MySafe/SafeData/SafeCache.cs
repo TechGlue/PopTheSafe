@@ -2,6 +2,7 @@ using MySafe.AdminCodeGenerator;
 
 namespace MySafe.SafeHelper;
 
+// In-memory DB
 public class SafeCache
 {
     private readonly Dictionary<int, ISafe> _cache = new();
@@ -23,7 +24,7 @@ public class SafeCache
         }
     }
 
-    public ISafe FetchSafe (int safeId)
+    public ISafe FetchSafe(int safeId)
     {
         if (!_cache.ContainsKey(safeId))
         {
@@ -31,10 +32,5 @@ public class SafeCache
         }
 
         return _cache[safeId];
-    }
-
-    public bool ContainsSafe(int safeId)
-    {
-        return _cache.ContainsKey(safeId);
     }
 }

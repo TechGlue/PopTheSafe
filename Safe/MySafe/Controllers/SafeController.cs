@@ -9,7 +9,7 @@ public class SafeController : BaseController
     private readonly ILogger<SafeController> _logger;
     private readonly SafeCache _safeCache;
 
-    public SafeController(IAdminCodeGenerator adminCodeGenerator, ILogger<SafeController> logger, SafeCache safeCache)
+    public SafeController(ILogger<SafeController> logger, SafeCache safeCache)
     {
         _safeCache = safeCache;
         _logger = logger;
