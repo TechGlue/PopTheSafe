@@ -1,18 +1,10 @@
 <div>
   <div class="text-xl font-bold">
     @if (safeResponse != null) {
-      <p>Current Safe Status: {{ safeResponse.isDetail }}</p>
+      <p>Safe {{ safeId }} Status: {{ safeResponse.isDetail }}</p>
     }
   </div>
 
-
-  <div class="text-xl font-bold">
-    @if (digitsInput == "") {
-      <p class="">Entered SafeCode: awaiting user input</p>
-    } @else {
-      <p class="">Entered SafeCode: {{ digitsInput }}</p>
-    }
-  </div>
 
   <div class="mt-4">
     <div class="flex flex-row gap-2">
@@ -65,7 +57,14 @@
     </div>
 
     <div class="text-xl font-bold mt-4">
-      <p>Currently Viewing Safe {{ safeId }}</p>
+      <div class=" font-bold">
+        @if (digitsInput == "") {
+          <p class="">Entered SafeCode: awaiting a safe pin</p>
+        } @else {
+          <p class="">Entered SafeCode: {{ digitsInput }}</p>
+        }
+      </div>
     </div>
   </div>
+
 </div>

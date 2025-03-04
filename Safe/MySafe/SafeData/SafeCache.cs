@@ -20,7 +20,7 @@ public class SafeCache
     {
         if (!_cache.TryAdd(safeId, newSafe))
         {
-            throw new ArgumentException("Non-unique safe id");
+            throw new ArgumentException("non-unique safe id");
         }
     }
 
