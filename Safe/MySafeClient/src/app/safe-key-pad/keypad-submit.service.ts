@@ -26,8 +26,7 @@ export class KeypadSubmitService {
   }
 
   submitSafePin(id: string, pin: string): Observable<ISafeResponse> {
-    const body = {title: 'something'};
-    return this.http.put<ISafeResponse>(`${this.baseUrl}/${id}/${pin}`, body);
+    return this.http.put<ISafeResponse>(`${this.baseUrl}/${id}/${pin}`, {});
   }
 
   resetSafePin(id: string): Observable<ISafeResponse> {

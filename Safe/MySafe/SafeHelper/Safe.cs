@@ -126,6 +126,7 @@ public class Safe : ISafe
         try
         {
             _safeStateMachine.Fire(SafeStates.Triggers.PressResetCode);
+            
             return SafeResponse.Ok();
         }
         catch (InvalidOperationException invalidOperation)
