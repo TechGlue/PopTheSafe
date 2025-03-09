@@ -1,4 +1,16 @@
 services:
+    psqldb:
+      image: postgres
+      restart: always
+      environment: 
+        POSTGRES_PASSWORD: strongPassword!234
+      volumes:
+        - postgresdata:/var/lib/postgresql/data
+      expose:
+        - 5432
+      ports:
+        - "5432:5432"
+
     safe:
       image: mysafe
       build:
@@ -19,5 +31,5 @@ services:
       ports: 
         - "4200:4200"
 
-
-
+volumes:
+  postgresdata:
