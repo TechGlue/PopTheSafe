@@ -186,6 +186,26 @@ public class Safe : ISafe
                 "The safe is in programming mode with a pin entered. Are we going to lock the safe or keep it unlocked?",
             _ => "Not sure how you got here. But we're here."
         };
+    
+    public int DescribeId() =>
+        _safeStateMachine.State switch
+        {
+            SafeStates.State.SafeClosedUnlocked =>
+                0,
+            SafeStates.State.SafeOpenUnlocked =>
+                1,
+            SafeStates.State.SafeInProgrammingModeOpen =>
+                2, 
+            SafeStates.State.SafeInProgrammingModeClosed =>
+                3,
+            SafeStates.State.SafeLocked =>
+                4, 
+            SafeStates.State.SafeLockedPinEntered =>
+                5, 
+            SafeStates.State.SafeInProgrammingModePinEntered =>
+                6,
+            _ => -9999 
+        };
 
     public bool VerifyFourDigitCode(string password)
     {
