@@ -9,11 +9,16 @@ public class SafeCache
 
     public SafeCache(IAdminCodeGenerator adminCodeGenerator)
     {
-        // add dummy data to safeCache
+        // add temporary safes to the safeCache
         AddSafe(1, new Safe(adminCodeGenerator));
         AddSafe(2, new Safe(adminCodeGenerator));
         AddSafe(3, new Safe(adminCodeGenerator));
         AddSafe(4, new Safe(adminCodeGenerator));
+        AddSafe(5, new Safe(adminCodeGenerator));
+        AddSafe(6, new Safe(adminCodeGenerator));
+        AddSafe(7, new Safe(adminCodeGenerator));
+        AddSafe(8, new Safe(adminCodeGenerator));
+        AddSafe(9999, new Safe(adminCodeGenerator));
     }
 
     public void AddSafe(int safeId, ISafe newSafe)
