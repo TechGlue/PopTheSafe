@@ -18,6 +18,12 @@ export class SafeKeyPadComponent {
   ) {
   }
 
+  openValidStatusId: Set<number> = new Set<number>([0,3,5]);
+  closeValidStatusId: Set<number> = new Set<number>([2,1]);
+  lockValidStatusId: Set<number> = new Set<number>([6]);
+  submitValidStatusId: Set<number> = new Set<number>([3,4]);
+  resetValidStatusId: Set<number> = new Set<number>([1]);
+
   digits: Number[] = [0, 1, 2, 3, 4, 5, 6, 7, 9];
   digitsInput: string = '';
 
@@ -36,7 +42,6 @@ export class SafeKeyPadComponent {
         }
       );
   }
-
 
   safeClose(): void {
     this.submitService.closeSafe(this.safeId)
@@ -113,4 +118,6 @@ export class SafeKeyPadComponent {
   clearInput(): void {
     this.digitsInput = '';
   }
+
+  protected readonly open = open;
 }

@@ -16,7 +16,4 @@ public record SafeResponse
     {
         return new SafeResponse { IsSuccessful = false, IsDetail = info };
     }
-    
-    
-    
 }
