@@ -27,7 +27,7 @@ jobs:
         run: dotnet build Safe/MySafe/MySafe.csproj --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/MySafe
+        run: dotnet publish Safe/MySafe/MySafe.csproj -c Release -o ${{env.DOTNET_ROOT}}/MySafe
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
