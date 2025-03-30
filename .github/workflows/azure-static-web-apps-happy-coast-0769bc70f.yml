@@ -13,6 +13,9 @@ jobs:
         with:
           submodules: true
           lfs: false
+      - name: Inject API_URL into environment.ts
+        run: |
+          sed -i "s#safestatusurl: ''#safestatusurl: '${{ secrets.API_URL }}'#g" ./Safe/MySafeClient/src/environments/environment.ts
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
