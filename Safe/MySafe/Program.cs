@@ -38,9 +38,8 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy( policy =>
     {
-        string temp = builder.Configuration.GetValue<string>("CORS:ContainerHost") ?? string.Empty;
+        string temp = builder.Configuration.GetValue<string>("CORS_ContainerHost") ?? string.Empty;
         policy.WithOrigins(temp);
-        // policy enables any http methods and headers from client
         policy.AllowAnyMethod();
         policy.AllowAnyHeader();
     });
