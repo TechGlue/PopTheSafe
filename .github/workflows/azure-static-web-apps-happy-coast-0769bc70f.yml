@@ -1,8 +1,6 @@
 name: SafestSafe Build and Deploy Workflow
 on:
-  push:
-    branches:
-      - WebAPI
+  workflow_dispatch:
 
 jobs:
   build_and_deploy_job:
