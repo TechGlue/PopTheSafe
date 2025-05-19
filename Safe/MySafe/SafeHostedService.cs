@@ -1,7 +1,6 @@
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using MySafe.SafeHelper;
 
-namespace Safe;
+namespace MySafe;
 
 public class SafeHostedService : BackgroundService
 {
@@ -11,7 +10,7 @@ public class SafeHostedService : BackgroundService
     private readonly ILogger<SafeHostedService> _logger;
 
     public SafeHostedService(ISafe safe,
-        IHostApplicationLifetime lifetime, MySafeConsole console, ILogger<SafeHostedService> logger)
+        IHostApplicationLifetime lifetime, SafeConsole console, ILogger<SafeHostedService> logger)
     {
         _console = console;
         _safe = safe;

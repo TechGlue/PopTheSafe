@@ -1,4 +1,4 @@
-namespace Safe;
+namespace MySafe.SafeHelper;
 
 public interface ISafe
 {
@@ -8,4 +8,5 @@ public interface ISafe
     SafeResponse PressLock();
     SafeResponse SetCode(string password, Action<SafeResponse> resultsHandler);
     string Describe();
+    int DescribeId();
 }

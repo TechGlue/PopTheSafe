@@ -1,0 +1,31 @@
+services:
+    redis:
+      image: redis
+      restart: always
+      ports:
+        - '6379:6379'
+      volumes: 
+        - redis_data:/data
+
+    safe:
+      image: mysafe
+      build:
+        context: .
+        dockerfile: MySafe/Dockerfile
+      expose: 
+        - 8080
+      ports: 
+        - "8080:8080"
+
+    mysafeclient: 
+      image: mysafe-client
+      build:
+        context: .
+        dockerfile: MySafeClient/Dockerfile
+      expose: 
+        - 4200
+      ports: 
+        - "4200:4200"
+
+volumes:
+  redis_data:

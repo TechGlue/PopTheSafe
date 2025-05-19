@@ -1,4 +1,8 @@
-name: SafestSafe Build and Deploy Workflow
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy ASP.Net Core app to Azure Web App - popthesafe
+
 on:
   push:
     branches:
@@ -6,27 +10,59 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_and_deploy_job:
+  build:
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
+    permissions:
+      contents: read #This is required for actions/checkout
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
         with:
-          submodules: true
-          lfs: false
-      - name: Inject API_URL into environment.ts
-        run: |
-          sed -i "s#safestatusurl: ''#safestatusurl: '${{ secrets.API_URL }}'#g" ./Safe/MySafeClient/src/environments/environment.ts
-      - name: Build And Deploy
-        id: builddeploy
-        uses: Azure/static-web-apps-deploy@v1
+          dotnet-version: '8.x'
+
+      - name: Build with dotnet
+        run: dotnet build Safe/MySafe/MySafe.csproj --configuration Release
+
+      - name: dotnet publish
+        run: dotnet publish Safe/MySafe/MySafe.csproj -c Release -o ${{env.DOTNET_ROOT}}/MySafe
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_HAPPY_COAST_0769BC70F }}
-          action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "Safe/MySafeClient" # App source code path
-          api_location: "" # Api source code path - optional
-          output_location: "dist/my-safe-client/browser" # Built app content directory - optional
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
-          ###### End of Repository/Build Configurations ######
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/MySafe
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_D20AD9CC68C3487C919CA2577D26E931 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_B330078ADC6E4CA086C1B76CF2CD6306 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2A5ACB6C392D4BAD948BEB679F5E436D }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'popthesafe'
+          slot-name: 'Production'
+          package: .
+          

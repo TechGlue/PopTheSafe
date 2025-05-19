@@ -1,8 +1,9 @@
+using MySafe.AdminCodeGenerator;
 using Stateless;
 
-namespace Safe;
+namespace MySafe.SafeHelper;
 
-public class MySafe : ISafe
+public class Safe : ISafe
 {
     // SafeStateMachine fields
     private readonly StateMachine<SafeStates.State, SafeStates.Triggers> _safeStateMachine;
@@ -16,7 +17,7 @@ public class MySafe : ISafe
 
     private string _adminPassword = String.Empty;
 
-    public MySafe(IAdminCodeGenerator adminCodeGenerator)
+    public Safe(IAdminCodeGenerator adminCodeGenerator)
     {
         // SafeStateMachine initialization
         _safeStateMachine =
@@ -125,6 +126,7 @@ public class MySafe : ISafe
         try
         {
             _safeStateMachine.Fire(SafeStates.Triggers.PressResetCode);
+            
             return SafeResponse.Ok();
         }
         catch (InvalidOperationException invalidOperation)
@@ -183,6 +185,26 @@ public class MySafe : ISafe
             SafeStates.State.SafeInProgrammingModePinEntered =>
                 "The safe is in programming mode with a pin entered. Are we going to lock the safe or keep it unlocked?",
             _ => "Not sure how you got here. But we're here."
+        };
+    
+    public int DescribeId() =>
+        _safeStateMachine.State switch
+        {
+            SafeStates.State.SafeClosedUnlocked =>
+                0,
+            SafeStates.State.SafeOpenUnlocked =>
+                1,
+            SafeStates.State.SafeInProgrammingModeOpen =>
+                2, 
+            SafeStates.State.SafeInProgrammingModeClosed =>
+                3,
+            SafeStates.State.SafeLocked =>
+                4, 
+            SafeStates.State.SafeLockedPinEntered =>
+                5, 
+            SafeStates.State.SafeInProgrammingModePinEntered =>
+                6,
+            _ => -9999 
         };
 
     public bool VerifyFourDigitCode(string password)

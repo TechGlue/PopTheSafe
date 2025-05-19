@@ -1,8 +1,8 @@
 using Spectre.Console;
 
-namespace Safe;
+namespace MySafe.SafeHelper;
 
-public class MySafeConsole : IMySafeConsole
+public class SafeConsole : IMySafeConsole
 {
     private readonly IAnsiConsole _console = AnsiConsole.Console;
 

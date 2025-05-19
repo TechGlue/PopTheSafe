@@ -1,9 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Safe;
-using Serilog;
+﻿using Serilog;
+using MySafe.AdminCodeGenerator;
+using MySafe.ErrorHandling;
+using MySafe.SafeHelper;
 
-IHostBuilder hostBuilder = Host.CreateDefaultBuilder();
+
+/*Todo: 
+ *
+ * 
+ */
+
+var builder = WebApplication.CreateBuilder(args);
 
 // two-step initialization 
 // first step
@@ -12,22 +18,37 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 
-hostBuilder.ConfigureServices(serviceCollection =>
+// seconds step, add callback
+builder.Services.AddSerilog((services, loggerConfiguration) => loggerConfiguration
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
+
+
+// in-memory storage
+builder.Services.AddSingleton<SafeCache>();
+builder.Services.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();
+builder.Services.AddScoped<ISafe, Safe>();
+builder.Services.AddControllers();
+builder.Services.AddExceptionHandler<SafeErrorHandling>();
+builder.Services.AddProblemDetails();
+
+// enable cross-origin requests only from localhost:4200 
+builder.Services.AddCors(options =>
 {
-    // seconds step, add callback
-    serviceCollection.AddSerilog((services, loggerConfiguration) => loggerConfiguration
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .WriteTo.Console());
-    
-    
-    // Inject the spectre console for the safe CLI based UI
-    serviceCollection.AddSingleton<MySafeConsole>();
-    
-    serviceCollection.AddSingleton<IAdminCodeGenerator, AdminCodeGenerator>();
-    serviceCollection.AddSingleton<ISafe, MySafe>();
-    
-    serviceCollection.AddHostedService<SafeHostedService>();
+    options.AddDefaultPolicy( policy =>
+    {
+        string temp = builder.Configuration.GetValue<string>("CORS_ContainerHost") ?? string.Empty;
+        policy.WithOrigins(temp);
+        policy.AllowAnyMethod();
+        policy.AllowAnyHeader();
+    });
 });
 
-await hostBuilder.RunConsoleAsync();
+var app = builder.Build();
+
+app.MapControllers();
+app.UseCors();
+app.UseExceptionHandler();
+
+app.Run();

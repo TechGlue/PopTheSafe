@@ -1,13 +1,25 @@
 # PopTheSafe
 
+## Requirements
+- Docker
+- Docker Compose 
+
 ## Overview
 ![MySafeStateMachine](./Docs/MySafe.png)
 
-## Running 
+## Running application containers
 
+### Unix based environments
 ```bash
-git clone https://github.com/TechGlue/PopTheSafe.git
-cd Safe
-dotnet restore
-dotnet run --project Safe/
+cd safe
+make all
 ```
+
+### Windows 
+```powershell
+cd safe
+docker-compose build
+docker-compose up -d
+```
+
+Once containers are done building navigate to http://localhost:4200/

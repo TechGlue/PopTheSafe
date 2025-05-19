@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Safe;
+namespace MySafe.AdminCodeGenerator;
 
 public class AdminCodeGenerator : IAdminCodeGenerator
 {
