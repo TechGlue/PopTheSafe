@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
 @theme {
+  /*Input */
   --color-inputwhite: #E9E6D7;
+  --color-inputgray: #DDDDDD;
+
+  /*Splash Button*/
+  --color-splashbuttonbg: #4A3933;
+  --color-buttonhover: #2F2522;
+  --color-buttontext: #e9e6d7;
 }

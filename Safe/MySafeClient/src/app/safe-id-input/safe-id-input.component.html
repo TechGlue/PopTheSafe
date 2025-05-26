@@ -1,19 +1,21 @@
 @if (safeIdToSend != "") {
   <app-safe-key-pad [safeId]="safeIdToSend" />
 } @else {
+  <label class="text-lg mb-4" style="color: #e9e6d7" for="safeIdControl"
+    >Enter your Safe ID below to access your safest functional but empty safe.
+  </label>
   <form [formGroup]="safeForm" (ngSubmit)="onSubmit()">
-    <label for="safeIdControl">Enter a safe id: </label>
     <br />
     <input
       id="safeIdControl"
-      class="text-inputwhite border-3 p-1"
+      class="border-inputwhite text-inputgray border-3 p-1"
       type="text"
       formControlName="safeIdControl"
-      placeholder="Ex. 1, 2, or 3"
+      placeholder="Ex. 1, 2, or 3 (1-10)"
     />
     <br />
     <button
-      class="bg-blue-500 rounded mt-2 p-1 text-white"
+      class="bg-splashbuttonbg hover:bg-buttonhover rounded-lg mt-4 px-4 py-2 text-buttontext font-medium transition duration-200"
       type="Submit"
       [disabled]="!safeForm.valid"
     >
