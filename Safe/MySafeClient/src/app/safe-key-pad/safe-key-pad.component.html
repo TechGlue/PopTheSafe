@@ -1,36 +1,33 @@
 <div>
   @if (safeResponse != undefined) {
-    <div class="text-xl font-bold">
+    <div class="text-xl font-bold" style="color: #e9e6d7">
       <p>Safe {{ safeId }} Status: {{ safeResponse.isDetail }}</p>
-      <p>Current State Id: {{ safeResponse.stateId }}</p>
     </div>
-
 
     <div class="mt-4">
       <div class="flex flex-row gap-2">
         @for (item of digits; track item) {
           <button
             (click)="concatNumberToInput(item.toString())"
-            class="rounded bg-indigo-500 hover:bg-fuchsia-500 p-4"
+            class="rounded shadow-md bg-[#4b3621] hover:bg-[#654321] p-4 text-[#e9e6d7] border border-[#8b7355] transition duration-200"
           >
             {{ item }}
           </button>
         }
       </div>
 
-
       <div class="mt-4 text-xl font-bold flex flex-row gap-2">
         @if (openValidStatusId.has(safeResponse.stateId)) {
           <button
             (click)="safeOpen()"
-            class="rounded bg-amber-500 hover:bg-amber-400 p-4"
+            class="rounded shadow-md bg-[#8b4513] hover:bg-[#a0522d] p-4 text-[#e9e6d7] border border-[#deb887] transition duration-200"
           >
             Open
           </button>
         } @else {
           <button
             (click)="safeOpen()"
-            class="rounded bg-gray-500 text-white hover:bg-gray-400 p-4"
+            class="rounded shadow-md bg-[#696969] hover:bg-[#808080] p-4 text-[#e9e6d7] border border-[#a9a9a9] transition duration-200"
           >
             Open
           </button>
@@ -38,14 +35,14 @@
         @if (closeValidStatusId.has(safeResponse.stateId)) {
           <button
             (click)="safeClose()"
-            class="rounded bg-green-500 hover:bg-green-400 p-4"
+            class="rounded shadow-md bg-[#556b2f] hover:bg-[#6b8e23] p-4 text-[#e9e6d7] border border-[#8fbc8f] transition duration-200"
           >
             Close
           </button>
         } @else {
           <button
             (click)="safeClose()"
-            class="rounded bg-gray-500 text-white hover:bg-gray-400 p-4"
+            class="rounded shadow-md bg-[#696969] hover:bg-[#808080] p-4 text-[#e9e6d7] border border-[#a9a9a9] transition duration-200"
           >
             Close
           </button>
@@ -54,14 +51,14 @@
         @if (lockValidStatusId.has(safeResponse.stateId)) {
           <button
             (click)="safeLock()"
-            class="rounded bg-blue-950 text-white hover:bg-sky-400 p-4"
+            class="rounded shadow-md bg-[#2f4f4f] hover:bg-[#3d5e5e] p-4 text-[#e9e6d7] border border-[#5f9ea0] transition duration-200"
           >
             Lock
           </button>
         } @else {
           <button
             (click)="safeLock()"
-            class="rounded bg-gray-500 text-white hover:bg-gray-400 p-4"
+            class="rounded shadow-md bg-[#696969] hover:bg-[#808080] p-4 text-[#e9e6d7] border border-[#a9a9a9] transition duration-200"
           >
             Lock
           </button>
@@ -70,14 +67,14 @@
         @if (submitValidStatusId.has(safeResponse.stateId)) {
           <button
             (click)="submitSafePin(digitsInput)"
-            class="rounded bg-sky-500 hover:bg-sky-400 p-4"
+            class="rounded shadow-md bg-[#483d8b] hover:bg-[#6a5acd] p-4 text-[#e9e6d7] border border-[#7b68ee] transition duration-200"
           >
             Submit
           </button>
         } @else {
           <button
             (click)="submitSafePin(digitsInput)"
-            class="rounded bg-gray-500 text-white hover:bg-gray-400 p-4"
+            class="rounded shadow-md bg-[#696969] hover:bg-[#808080] p-4 text-[#e9e6d7] border border-[#a9a9a9] transition duration-200"
           >
             Submit
           </button>
@@ -85,7 +82,7 @@
 
         <button
           (click)="clearInput()"
-          class="rounded bg-red-500 hover:bg-red-400 p-4"
+          class="rounded shadow-md bg-[#8b0000] hover:bg-[#a52a2a] p-4 text-[#e9e6d7] border border-[#cd5c5c] transition duration-200"
         >
           Clear
         </button>
@@ -93,30 +90,29 @@
         @if (resetValidStatusId.has(safeResponse.stateId)) {
           <button
             (click)="resetSafePin()"
-            class="rounded bg-fuchsia-500 hover:bg-fuchsia-400 p-4"
+            class="rounded shadow-md bg-[#4b0082] hover:bg-[#663399] p-4 text-[#e9e6d7] border border-[#9370db] transition duration-200"
           >
             Reset
           </button>
         } @else {
           <button
             (click)="resetSafePin()"
-            class="rounded bg-gray-500 text-white hover:bg-gray-400 p-4"
+            class="rounded shadow-md bg-[#696969] hover:bg-[#808080] p-4 text-[#e9e6d7] border border-[#a9a9a9] transition duration-200"
           >
             Reset
           </button>
         }
       </div>
 
-      <div class="text-xl font-bold mt-4">
-        <div class=" font-bold">
+      <div class="text-xl font-bold mt-4" style="color: #e9e6d7">
+        <div class="font-bold">
           @if (digitsInput == "") {
-            <p class="">Entered SafeCode: awaiting a safe pin</p>
+            <p>Entered SafeCode: awaiting a safe pin</p>
           } @else {
-            <p class="">Entered SafeCode: {{ digitsInput }}</p>
+            <p>Entered SafeCode: {{ digitsInput }}</p>
           }
         </div>
       </div>
     </div>
   }
-
 </div>
