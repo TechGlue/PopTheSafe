@@ -91,4 +91,14 @@ public class SafeController : BaseController
 
         return Ok(SafeResponse.Ok(safe.Describe(), safe.DescribeId()));
     }
+    
+    [HttpGet("factoryreset/{safeId}")]
+    [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult FactoryReset(int safeId)
+    {
+        ISafe safe = _safeCache.FactoryResetSafe(safeId);
+
+        return Ok(SafeResponse.Ok(safe.Describe(), safe.DescribeId()));
+    }
 }
