@@ -28,8 +28,15 @@ public class SafeController : BaseController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult FetchSafeStatus(int id)
     {
-        ISafe currentSafe = _safeCache.FetchSafe(id);
-        return Ok(SafeResponse.Ok(currentSafe.Describe(), currentSafe.DescribeId()));
+        try
+        {
+            ISafe currentSafe = _safeCache.FetchSafe(id);
+            return Ok(SafeResponse.Ok(currentSafe.Describe(), currentSafe.DescribeId()));
+        }
+        catch (KeyNotFoundException ke)
+        {
+            return BadRequest("Note, the Application is currently only available in DEMO Mode. Please select pre-set 0-10 Safes.");
+        }
     }
 
     [HttpPut("{safeId}/{safePin}")]
