@@ -80,12 +80,8 @@
           </button>
         }
 
-        <button
-          (click)="clearInput()"
-          class="rounded shadow-md bg-[#8b0000] hover:bg-[#a52a2a] p-4 text-[#e9e6d7] border border-[#cd5c5c] transition duration-200"
-        >
-          Clear
-        </button>
+        class="rounded shadow-md bg-[#8b0000] hover:bg-[#a52a2a] p-4
+        text-[#e9e6d7] border border-[#cd5c5c] transition duration-200" > Clear
 
         @if (resetValidStatusId.has(safeResponse.stateId)) {
           <button

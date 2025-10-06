@@ -26,7 +26,6 @@ export class FactoryResetPopupComponent {
 
   onRespond(value: boolean) {
     if (value) {
-      console.log('You are nuking the safe, but you know that right?');
       this.http
         .get<ISafeResponse>(
           `${this.baseUrl}/factoryreset/${this.popUpService.id}`,
@@ -37,7 +36,6 @@ export class FactoryResetPopupComponent {
           },
         });
     } else {
-      console.log('reloading the view');
       window.location.reload();
     }
   }
