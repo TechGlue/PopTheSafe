@@ -76,12 +76,7 @@ export class SafeKeyPadComponent {
   }
 
   factoryReset(): void {
-    this.submitService
-      .factoryReset(this.safeId)
-      .pipe(catchError((error) => EMPTY))
-      .subscribe((data: ISafeResponse) => {
-        this.safeResponse = data;
-      });
+    this.submitService.factoryReset(this.safeId);
   }
 
   submitSafePin(pin: string): void {

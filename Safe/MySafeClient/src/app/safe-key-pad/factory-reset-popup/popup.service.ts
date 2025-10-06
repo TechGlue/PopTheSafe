@@ -10,9 +10,12 @@ export class PopupService {
     resolve: (value: boolean) => void;
   }>();
 
+  id: string | null = null;
+
   alert$ = this.alertSubject.asObservable();
 
-  show(message: string): Promise<boolean> {
+  show(message: string, id: string): Promise<boolean> {
+    this.id = id;
     return new Promise((resolve) => {
       this.alertSubject.next({ message, resolve });
     });

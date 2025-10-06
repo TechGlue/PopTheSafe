@@ -36,8 +36,7 @@ export class KeypadSubmitService {
     return this.http.get<ISafeResponse>(`${this.baseUrl}/reset/${id}`);
   }
 
-  factoryReset(id: string): Observable<ISafeResponse> {
-    this.popupservice.show('You are about to FACTORY RESET THIS SAFE');
-    return this.http.get<ISafeResponse>(`${this.baseUrl}/factoryreset/${id}`);
+  factoryReset(id: string) {
+    this.popupservice.show(`You are about to FACTORY RESET SAFE ${id}`, id);
   }
 }
