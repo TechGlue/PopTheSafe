@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using MySafe.AdminCodeGenerator;
 using MySafe.SafeHelper;
 
 namespace MySafe.Controllers;
@@ -35,7 +34,7 @@ public class SafeController : BaseController
         }
         catch (KeyNotFoundException ke)
         {
-            return BadRequest("Note, the Application is currently only available in DEMO Mode. Please select pre-set 0-10 Safes.");
+            return BadRequest("The Application is only available in Demo mode, as it's a proof of concept. Please select pre-set 0-10 Safes.");
         }
     }
 

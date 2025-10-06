@@ -1,14 +1,27 @@
 import { Component, computed, input, output } from '@angular/core';
+import { PopupService } from './popup.service';
 
 @Component({
   selector: 'app-factory-reset-popup',
-  imports: [],
   templateUrl: './factory-reset-popup.component.html',
   styleUrl: './factory-reset-popup.component.scss',
 })
 export class FactoryResetPopupComponent {
-  message = input('');
-  closed = output<void>();
+  message: string | null = null;
+  private resolver?: (value: boolean) => void;
 
-  state = computed(() => (this.message() ? 'opened' : 'closed'));
+  constructor(private popUpService: PopupService) {
+    this.popUpService.alert$.subscribe(({ message, resolve }) => {
+      this.message = message;
+      this.resolver = resolve;
+    });
+  }
+
+  onRespond(value: boolean) {
+    if (value) {
+      console.log('You are nuking the safe, but you know that right?');
+    } else {
+      console.log('The safe lives to safe another day');
+    }
+  }
 }

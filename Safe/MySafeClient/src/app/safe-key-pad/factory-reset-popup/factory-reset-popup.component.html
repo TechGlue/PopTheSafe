@@ -1,3 +1,21 @@
-<div>
-  <p>Welcome to the safe factory reset screen</p>
-</div>
+@if (this.message !== null) {
+  <div class="alert-overlay">
+    <div class="alert-box">
+      <p class="text-2xl text-buttontext font-semibold">{{ message }}</p>
+      <div class="grid grid-cols-2 m-1 gap-2">
+        <button
+          class="btn bg-red-500 text-buttontext rounded-2xl cursor-pointer p-3 hover:bg-red-400 border-white"
+          (click)="onRespond(true)"
+        >
+          You are going to reset the safe. <br />Be Careful!
+        </button>
+        <button
+          class="btn bg-green-700 text-buttontext rounded-2xl cursor-pointer p-2 hover:bg-green-600 border-white"
+          (click)="onRespond(false)"
+        >
+          Stop this, so that the safe can safe another day!
+        </button>
+      </div>
+    </div>
+  </div>
+}
