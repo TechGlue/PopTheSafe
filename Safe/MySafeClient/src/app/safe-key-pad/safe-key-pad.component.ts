@@ -1,9 +1,9 @@
-import {Component, Input} from '@angular/core';
-import {KeypadSubmitService} from './keypad-submit.service';
-import {SafeStatusService} from '../safe-status/safe-status.service';
-import {catchError, EMPTY} from 'rxjs';
-import {ISafeResponse} from '../safe-response';
-import {ReactiveFormsModule} from '@angular/forms';
+import { Component, Input } from '@angular/core';
+import { KeypadSubmitService } from './keypad-submit.service';
+import { SafeStatusService } from '../safe-status/safe-status.service';
+import { catchError, EMPTY } from 'rxjs';
+import { ISafeResponse } from '../safe-response';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   imports: [ReactiveFormsModule],
@@ -15,13 +15,12 @@ export class SafeKeyPadComponent {
   constructor(
     private submitService: KeypadSubmitService,
     private safeStatusService: SafeStatusService,
-  ) {
-  }
+  ) {}
 
-  openValidStatusId: Set<number> = new Set<number>([0,3,5]);
-  closeValidStatusId: Set<number> = new Set<number>([2,1]);
+  openValidStatusId: Set<number> = new Set<number>([0, 3, 5]);
+  closeValidStatusId: Set<number> = new Set<number>([2, 1]);
   lockValidStatusId: Set<number> = new Set<number>([6]);
-  submitValidStatusId: Set<number> = new Set<number>([3,4]);
+  submitValidStatusId: Set<number> = new Set<number>([3, 4]);
   resetValidStatusId: Set<number> = new Set<number>([1]);
 
   digits: Number[] = [0, 1, 2, 3, 4, 5, 6, 7, 9];
@@ -32,63 +31,52 @@ export class SafeKeyPadComponent {
   safeResponse!: ISafeResponse;
 
   ngOnInit(): void {
-    this.safeStatusService.getSafeStatus(this.safeId)
-      .pipe(
-        catchError(error => EMPTY)
-      )
-      .subscribe(
-        (data: ISafeResponse) => {
-          this.safeResponse = data;
-        }
-      );
+    this.safeStatusService
+      .getSafeStatus(this.safeId)
+      .pipe(catchError((error) => EMPTY))
+      .subscribe((data: ISafeResponse) => {
+        this.safeResponse = data;
+      });
   }
 
   safeClose(): void {
-    this.submitService.closeSafe(this.safeId)
-      .pipe(
-        catchError(error => EMPTY)
-      )
-      .subscribe(
-        (data: ISafeResponse) => {
-          this.safeResponse = data;
-        }
-      );
+    this.submitService
+      .closeSafe(this.safeId)
+      .pipe(catchError((error) => EMPTY))
+      .subscribe((data: ISafeResponse) => {
+        this.safeResponse = data;
+      });
   }
 
   safeOpen(): void {
-    this.submitService.openSafe(this.safeId)
-      .pipe(
-        catchError(error => EMPTY)
-      )
-      .subscribe(
-        (data: ISafeResponse) => {
-          this.safeResponse = data;
-        }
-      );
+    this.submitService
+      .openSafe(this.safeId)
+      .pipe(catchError((error) => EMPTY))
+      .subscribe((data: ISafeResponse) => {
+        this.safeResponse = data;
+      });
   }
 
   safeLock(): void {
-    this.submitService.lockSafe(this.safeId)
-      .pipe(
-        catchError(error => EMPTY)
-      )
-      .subscribe(
-        (data: ISafeResponse) => {
-          this.safeResponse = data;
-        }
-      );
+    this.submitService
+      .lockSafe(this.safeId)
+      .pipe(catchError((error) => EMPTY))
+      .subscribe((data: ISafeResponse) => {
+        this.safeResponse = data;
+      });
   }
 
   resetSafePin(): void {
-    this.submitService.resetSafePin(this.safeId)
-      .pipe(
-        catchError(error => EMPTY)
-      )
-      .subscribe(
-        (data: ISafeResponse) => {
-          this.safeResponse = data;
-        }
-      );
+    this.submitService
+      .resetSafePin(this.safeId)
+      .pipe(catchError((error) => EMPTY))
+      .subscribe((data: ISafeResponse) => {
+        this.safeResponse = data;
+      });
+  }
+
+  factoryReset(): void {
+    this.submitService.factoryReset(this.safeId);
   }
 
   submitSafePin(pin: string): void {
@@ -96,15 +84,12 @@ export class SafeKeyPadComponent {
       return;
     }
 
-    this.submitService.submitSafePin(this.safeId, pin)
-      .pipe(
-        catchError(error => EMPTY)
-      )
-      .subscribe(
-        (data: ISafeResponse) => {
-          this.safeResponse = data;
-        }
-      );
+    this.submitService
+      .submitSafePin(this.safeId, pin)
+      .pipe(catchError((error) => EMPTY))
+      .subscribe((data: ISafeResponse) => {
+        this.safeResponse = data;
+      });
 
     this.digitsInput = '';
   }

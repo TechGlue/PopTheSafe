@@ -3,12 +3,6 @@ using MySafe.AdminCodeGenerator;
 using MySafe.ErrorHandling;
 using MySafe.SafeHelper;
 
-
-/*Todo: 
- *
- * 
- */
-
 var builder = WebApplication.CreateBuilder(args);
 
 // two-step initialization 

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using MySafe.AdminCodeGenerator;
 using MySafe.SafeHelper;
 
 namespace MySafe.Controllers;
@@ -28,8 +27,15 @@ public class SafeController : BaseController
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
     public IActionResult FetchSafeStatus(int id)
     {
-        ISafe currentSafe = _safeCache.FetchSafe(id);
-        return Ok(SafeResponse.Ok(currentSafe.Describe(), currentSafe.DescribeId()));
+        try
+        {
+            ISafe currentSafe = _safeCache.FetchSafe(id);
+            return Ok(SafeResponse.Ok(currentSafe.Describe(), currentSafe.DescribeId()));
+        }
+        catch (KeyNotFoundException ke)
+        {
+            return BadRequest("The Application is only available in Demo mode, as it's a proof of concept. Please select pre-set 0-10 Safes.");
+        }
     }
 
     [HttpPut("{safeId}/{safePin}")]
@@ -88,6 +94,16 @@ public class SafeController : BaseController
         ISafe safe = _safeCache.FetchSafe(safeId);
 
         safe.PressLock();
+
+        return Ok(SafeResponse.Ok(safe.Describe(), safe.DescribeId()));
+    }
+    
+    [HttpGet("factoryreset/{safeId}")]
+    [ProducesResponseType(typeof(SafeResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
+    public IActionResult FactoryReset(int safeId)
+    {
+        ISafe safe = _safeCache.FactoryResetSafe(safeId);
 
         return Ok(SafeResponse.Ok(safe.Describe(), safe.DescribeId()));
     }

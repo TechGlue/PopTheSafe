@@ -1,15 +1,18 @@
-import {Injectable} from '@angular/core';
-import {environment} from '../../environments/environment';
-import {catchError, Observable, throwError} from 'rxjs';
-import {ISafeResponse} from '../safe-response';
-import {HttpClient} from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { environment } from '../../environments/environment';
+import { catchError, Observable, throwError } from 'rxjs';
+import { ISafeResponse } from '../safe-response';
+import { HttpClient } from '@angular/common/http';
+import { PopupService } from './factory-reset-popup/popup.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class KeypadSubmitService {
-  constructor(private http: HttpClient) {
-  }
+  constructor(
+    private http: HttpClient,
+    private popupservice: PopupService,
+  ) {}
 
   private baseUrl: string = environment.safestatusurl + '/safe';
 
@@ -31,5 +34,9 @@ export class KeypadSubmitService {
 
   resetSafePin(id: string): Observable<ISafeResponse> {
     return this.http.get<ISafeResponse>(`${this.baseUrl}/reset/${id}`);
+  }
+
+  factoryReset(id: string) {
+    this.popupservice.show(`You are about to FACTORY RESET SAFE ${id}`, id);
   }
 }
